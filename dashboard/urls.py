@@ -19,6 +19,7 @@ urlpatterns = [
     path('chair/conference/<int:conf_id>/pc/remove/<int:user_id>/', views.pc_remove, name='pc_remove'),
     path('pc/invite/accept/<str:token>/', views.pc_invite_accept, name='pc_invite_accept'),
     path('conference/<int:conf_id>/submissions/', views.conference_submissions, name='conference_submissions'),
+    path('conference/<int:conf_id>/details/', views.conference_details, name='conference_details'),
     path('conference/<int:conf_id>/administration/', views.conference_administration, name='conference_administration'),
     path('conference/<int:conf_id>/configuration/', views.conference_configuration, name='conference_configuration'),
     # Registration application URLs

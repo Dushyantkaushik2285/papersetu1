@@ -59,11 +59,7 @@
                         {% elif item == 'Reviews' %}
                             <a href="{% url 'dashboard:all_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Reviews</a>
                         {% elif item == 'Conference' %}
-                            {% if is_chair %}
-                                <a href="{% url 'dashboard:chair_conference_detail' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Conference</a>
-                            {% else %}
-                                <a href="#" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Conference</a>
-                            {% endif %}
+                            <a href="{% url 'dashboard:conference_details' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Conference</a>
                         {% else %}
                             <a href="#" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">{{ item }}</a>
                         {% endif %}

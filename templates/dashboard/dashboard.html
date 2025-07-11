@@ -92,7 +92,7 @@
                     {% elif item == 'Administration' %}
                     <a href="{% url 'dashboard:conference_administration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Administration</a>
                     {% elif item == 'Conference' %}
-                    <a href="{% url 'dashboard:conference_configuration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Conference</a>
+                    <a href="{% url 'dashboard:conference_details' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Conference</a>
                     {% elif item == 'Reviews' %}
                     <a href="{% url 'dashboard:all_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Reviews</a>
                     {% elif item == 'Status' %}
@@ -147,7 +147,7 @@
                                 <h3 class="text-lg font-semibold text-blue-700">{{ conf.name }}</h3>
                                 <span class="ml-2 text-xs px-2 py-1 rounded bg-gray-200">{{ conf.acronym }}</span>
                             </div>
-                            <a href="/dashboard/chair/conference/{{ conf.id }}/" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold">Manage Conference</a>
+                            <a href="{% url 'dashboard:conference_details' conf.id %}" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold">Manage Conference</a>
                         </div>
                     {% empty %}
                         <div class="col-span-2 text-gray-500">No conferences created yet.</div>

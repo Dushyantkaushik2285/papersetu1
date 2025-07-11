@@ -1,0 +1,280 @@
+{% load conference_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ conference.name }} - Conference Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow rounded mb-8 border border-gray-200 relative">
+        <ul class="flex flex-wrap md:flex-nowrap justify-start md:justify-center items-center overflow-x-auto text-sm font-semibold">
+            {% for item in nav_items %}
+                <li class="m-1 relative">
+                    {% if item == 'PC' %}
+                        <a href="{% url 'dashboard:pc_list' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">PC</a>
+                    {% elif item == 'Submissions' %}
+                        <a href="{% url 'dashboard:conference_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Submissions</a>
+                    {% elif item == 'Administration' %}
+                        <a href="{% url 'dashboard:conference_administration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Administration</a>
+                    {% elif item == 'Conference' %}
+                        <a href="{% url 'dashboard:conference_details' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-blue-600 text-white shadow">Conference</a>
+                    {% elif item == 'Reviews' %}
+                        <a href="{% url 'dashboard:all_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Reviews</a>
+                    {% elif item == 'Status' %}
+                        <a href="{% url 'dashboard:status_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Status</a>
+                    {% elif item == 'Events' %}
+                        <a href="{% url 'dashboard:events_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Events</a>
+                    {% elif item == 'Email' %}
+                        <a href="{% url 'dashboard:email_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Email</a>
+                    {% elif item == 'News' %}
+                        <a href="{% url 'dashboard:news_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">News</a>
+                    {% elif item == 'papersetu' %}
+                        <a href="{% url 'dashboard:papersetu_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">papersetu</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+
+    <main class="container mx-auto px-4">
+        <!-- Conference Header -->
+        <section class="bg-white rounded-lg shadow p-6 mb-8">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <h1 class="text-3xl font-bold mb-2 text-blue-700">{{ conference.name }}</h1>
+                    {% if conference.acronym %}
+                        <p class="text-xl text-gray-600 mb-2">{{ conference.acronym }}</p>
+                    {% endif %}
+                    <p class="text-gray-600 mb-2">{{ conference.venue }}, {{ conference.city }}</p>
+                    <p class="text-sm text-gray-500">{{ conference.start_date }} - {{ conference.end_date }}</p>
+                </div>
+                <div class="text-right space-y-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                        {% if conference.status == 'upcoming' %}bg-yellow-100 text-yellow-800
+                        {% elif conference.status == 'live' %}bg-green-100 text-green-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ conference.status|title }}
+                    </span>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Role Switcher -->
+        {% if available_roles|length > 1 %}
+        <section class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Change Role</h2>
+            <div class="flex flex-wrap gap-2">
+                {% for role_code, role_name in available_roles %}
+                    <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-colors">
+                        {{ role_name }}
+                    </button>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Conference Information Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Basic Information -->
+            <section class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                    Basic Information
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                        <p class="mt-1 text-gray-900">{{ conference.name }}</p>
+                    </div>
+                    {% if conference.acronym %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Acronym</label>
+                        <p class="mt-1 text-gray-900">{{ conference.acronym }}</p>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <p class="mt-1 text-gray-900">{{ conference.description|default:"No description available" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Organizing Institution</label>
+                        <p class="mt-1 text-gray-900">{{ conference.organizing_institution|default:"Not specified" }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dates and Location -->
+            <section class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                    Dates & Location
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Start Date</label>
+                        <p class="mt-1 text-gray-900">{{ conference.start_date }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">End Date</label>
+                        <p class="mt-1 text-gray-900">{{ conference.end_date }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Venue</label>
+                        <p class="mt-1 text-gray-900">{{ conference.venue|default:"Not specified" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">City</label>
+                        <p class="mt-1 text-gray-900">{{ conference.city|default:"Not specified" }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Submission Information -->
+            <section class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-file-alt text-blue-600 mr-2"></i>
+                    Submission Details
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Paper Submission Deadline</label>
+                        <p class="mt-1 text-gray-900">{{ conference.paper_submission_deadline|default:"Not set" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">CFP Status</label>
+                        <span class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                            {% if conference.paper_submission_deadline and conference.paper_submission_deadline > today %}bg-green-100 text-green-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if conference.paper_submission_deadline and conference.paper_submission_deadline > today %}
+                                Open
+                            {% else %}
+                                Closed
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Abstract Required</label>
+                        <p class="mt-1 text-gray-900">{{ conference.abstract_required|yesno:"Yes,No" }}</p>
+                    </div>
+                    {% if conference.paper_format %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Paper Format</label>
+                        <p class="mt-1 text-gray-900">{{ conference.paper_format }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Leadership -->
+            <section class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-users text-blue-600 mr-2"></i>
+                    Leadership
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Conference Chair</label>
+                        <div class="mt-1 flex items-center">
+                            <img class="h-8 w-8 rounded-full mr-3" 
+                                 src="https://ui-avatars.com/api/?name={{ conference.chair.get_full_name|default:conference.chair.username }}" 
+                                 alt="{{ conference.chair.get_full_name }}">
+                            <div>
+                                <p class="text-gray-900 font-medium">{{ conference.chair.get_full_name|default:conference.chair.username }}</p>
+                                <p class="text-sm text-gray-500">{{ conference.chair.email }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% if co_chairs %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Co-Chairs</label>
+                        <div class="mt-1 space-y-2">
+                            {% for co_chair in co_chairs %}
+                            <div class="flex items-center">
+                                <img class="h-6 w-6 rounded-full mr-2" 
+                                     src="https://ui-avatars.com/api/?name={{ co_chair.user.get_full_name|default:co_chair.user.username }}" 
+                                     alt="{{ co_chair.user.get_full_name }}">
+                                <div>
+                                    <p class="text-gray-900 text-sm">{{ co_chair.user.get_full_name|default:co_chair.user.username }}</p>
+                                    <p class="text-xs text-gray-500">{{ co_chair.user.email }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Additional Information -->
+        <section class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-cog text-blue-600 mr-2"></i>
+                Conference Settings
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Review Process</label>
+                    <p class="mt-1 text-gray-900">{{ conference.review_process|default:"Standard peer review" }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Decision Process</label>
+                    <p class="mt-1 text-gray-900">{{ conference.decision_process|default:"Committee decision" }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Registration Required</label>
+                    <p class="mt-1 text-gray-900">{{ conference.registration_required|yesno:"Yes,No" }}</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        {% if is_chair %}
+        <section class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-tools text-blue-600 mr-2"></i>
+                Quick Actions
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="{% url 'dashboard:conference_configuration' conference.id %}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                    <i class="fas fa-cog text-blue-600 mr-3"></i>
+                    <span class="text-gray-900">Configure</span>
+                </a>
+                <a href="{% url 'dashboard:pc_list' conference.id %}" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                    <i class="fas fa-users text-green-600 mr-3"></i>
+                    <span class="text-gray-900">Manage PC</span>
+                </a>
+                <a href="{% url 'dashboard:conference_submissions' conference.id %}" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                    <i class="fas fa-file-alt text-purple-600 mr-3"></i>
+                    <span class="text-gray-900">View Submissions</span>
+                </a>
+                <a href="{% url 'dashboard:conference_administration' conference.id %}" class="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
+                    <i class="fas fa-chart-bar text-orange-600 mr-3"></i>
+                    <span class="text-gray-900">Administration</span>
+                </a>
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    <script>
+        // Role switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleButtons = document.querySelectorAll('button');
+            roleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const roleName = this.textContent.trim();
+                    // Here you would implement the role switching logic
+                    // For now, just show an alert
+                    alert(`Switching to ${roleName} role. This feature will be implemented soon.`);
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

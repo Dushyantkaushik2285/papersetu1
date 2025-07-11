@@ -54,7 +54,7 @@
                 {% for item in nav_items %}
                     <li class="m-1">
                         {% if item == 'Conference' %}
-                            <a href="{% url 'dashboard:conference_configuration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-blue-600 text-white shadow">Conference</a>
+                            <a href="{% url 'dashboard:conference_details' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Conference</a>
                         {% elif item == 'Submissions' %}
                             <a href="{% url 'dashboard:conference_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Submissions</a>
                         {% elif item == 'Administration' %}

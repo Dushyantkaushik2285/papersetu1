@@ -10,6 +10,7 @@ from django.views import View
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from datetime import date
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.crypto import get_random_string
@@ -317,130 +318,8 @@ def chair_conference_detail(request, conf_id):
     if conference.chair != request.user or not conference.is_approved:
         return redirect('dashboard:dashboard')
     
-    papers = Paper.objects.filter(conference=conference).select_related('author')
-    authors = UserConferenceRole.objects.filter(conference=conference, role='author').select_related('user')
-    reviewers = UserConferenceRole.objects.filter(conference=conference, role='reviewer').select_related('user')
-    review_invites = ReviewInvite.objects.filter(conference=conference)
-    
-    # Get all available reviewers (those who have volunteered)
-    available_reviewers = User.objects.filter(reviewer_profile__isnull=False).exclude(
-        review_invites__conference=conference
-    )
-    
-    # Search functionality for reviewers
-    search_query = request.GET.get('search', '')
-    if search_query:
-        available_reviewers = available_reviewers.filter(
-            Q(first_name__icontains=search_query) | 
-            Q(last_name__icontains=search_query) | 
-            Q(username__icontains=search_query) |
-            Q(email__icontains=search_query)
-        )
-    
-    assign_message = ''
-    invite_message = ''
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        
-        if action == 'assign_paper':
-            paper_id = request.POST.get('paper_id')
-            reviewer_username = request.POST.get('reviewer_username')
-            try:
-                paper = Paper.objects.get(id=paper_id, conference=conference)
-                reviewer = User.objects.get(username=reviewer_username)
-                # Only assign if reviewer is accepted for this conference
-                if ReviewInvite.objects.filter(conference=conference, reviewer=reviewer, status='accepted').exists():
-                    # Create or get Review object to assign the paper to reviewer
-                    review, created = Review.objects.get_or_create(
-                        paper=paper,
-                        reviewer=reviewer,
-                        defaults={'decision': None}  # None means not reviewed yet
-                    )
-                    
-                    if created:
-                        assign_message = f"Assigned {reviewer.username} to paper '{paper.title}'."
-                    else:
-                        assign_message = f"{reviewer.username} was already assigned to paper '{paper.title}'."
-                    
-                    # Create notification for reviewer
-                    Notification.objects.create(
-                        recipient=reviewer,
-                        notification_type='paper_assignment',
-                        title=f'Paper Assignment',
-                        message=f'You have been assigned to review the paper "{paper.title}" for {conference.name}.',
-                        related_paper=paper,
-                        related_conference=conference
-                    )
-                else:
-                    assign_message = f"User {reviewer_username} is not an accepted reviewer for this conference."
-            except (Paper.DoesNotExist, User.DoesNotExist):
-                assign_message = "Invalid paper or reviewer."
-        
-        elif action == 'invite_reviewer':
-            reviewer_username = request.POST.get('reviewer_username')
-            try:
-                reviewer = User.objects.get(username=reviewer_username)
-                # Check if already invited
-                if not ReviewInvite.objects.filter(conference=conference, reviewer=reviewer).exists():
-                    invite = ReviewInvite.objects.create(conference=conference, reviewer=reviewer)
-                    invite_message = f"Invitation sent to {reviewer.username}."
-                    
-                    # Create notification for reviewer
-                    Notification.objects.create(
-                        recipient=reviewer,
-                        notification_type='reviewer_invite',
-                        title=f'Reviewer Invitation',
-                        message=f'You have been invited to review papers for {conference.name}. Please check your dashboard to accept or decline.',
-                        related_conference=conference,
-                        related_review_invite=invite
-                    )
-                    
-                    # Debug: Print invitation details
-                    print(f"DEBUG: Created invitation for {reviewer.username} to {conference.name}")
-                    print(f"DEBUG: Invitation ID: {invite.id}, Status: {invite.status}")
-                else:
-                    invite_message = f"{reviewer.username} has already been invited."
-                    print(f"DEBUG: {reviewer.username} already invited to {conference.name}")
-            except User.DoesNotExist:
-                invite_message = "Invalid reviewer username."
-                print(f"DEBUG: User {reviewer_username} not found")
-    
-    invite_url = request.build_absolute_uri(f"/conference/join/{conference.invite_link}/")
-    
-    nav_items = [
-        "Submissions", "Reviews", "Status", "PC", "Events",
-        "Email", "Administration", "Conference", "News", "papersetu"
-    ]
-    active_tab = request.GET.get('tab', 'Submissions')
-    
-    review_dropdown_items = [
-        {'label': 'All submissions', 'url': reverse('dashboard:all_submissions', args=[conference.id])},
-        {'label': 'Assigned to me', 'url': reverse('dashboard:assigned_to_me', args=[conference.id])},
-        {'label': 'Subreviewers', 'url': reverse('dashboard:subreviewers', args=[conference.id])},
-        {'label': 'Pool of subreviewers', 'url': reverse('dashboard:pool_subreviewers', args=[conference.id])},
-        {'label': 'By PC member', 'url': reverse('dashboard:by_pc_member', args=[conference.id])},
-        {'label': 'By submission', 'url': reverse('dashboard:by_submission', args=[conference.id])},
-        {'label': 'Delete', 'url': reverse('dashboard:delete_review', args=[conference.id])},
-        {'label': 'Send to authors', 'url': reverse('dashboard:send_to_authors', args=[conference.id])},
-        {'label': 'Missing reviews', 'url': reverse('dashboard:missing_reviews', args=[conference.id])},
-    ]
-    context = {
-        'conference': conference,
-        'papers': papers,
-        'authors': authors,
-        'reviewers': reviewers,
-        'review_invites': review_invites,
-        'available_reviewers': available_reviewers,
-        'assign_message': assign_message,
-        'invite_message': invite_message,
-        'invite_url': invite_url,
-        'search_query': search_query,
-        'nav_items': nav_items,
-        'active_tab': active_tab,
-        'review_dropdown_items': review_dropdown_items,
-    }
-    return render(request, 'dashboard/chair_conference_detail.html', context)
+    # Redirect to the submissions page for this conference
+    return redirect('dashboard:conference_submissions', conf_id=conf_id)
 
 @require_POST
 @login_required
@@ -780,6 +659,69 @@ def conference_submissions(request, conf_id):
     }
     
     return render(request, 'dashboard/conference_submissions.html', context)
+
+@login_required
+def conference_details(request, conf_id):
+    """
+    Display detailed information about a specific conference.
+    Accessible by conference chair, PC members, and authors.
+    """
+    conference = get_object_or_404(Conference, id=conf_id)
+    user = request.user
+    
+    # Check if user has any role in this conference
+    user_roles = UserConferenceRole.objects.filter(
+        user=user, 
+        conference=conference
+    ).values_list('role', flat=True)
+    
+    is_chair = conference.chair == user
+    is_pc_member = 'pc_member' in user_roles
+    is_author = 'author' in user_roles
+    is_reviewer = 'reviewer' in user_roles
+    
+    if not (is_chair or is_pc_member or is_author or is_reviewer):
+        return render(request, 'dashboard/forbidden.html', {
+            'message': 'You do not have permission to view details for this conference.'
+        })
+    
+    # Get user's available roles for role switching
+    available_roles = []
+    if is_chair:
+        available_roles.append(('chair', 'Chair'))
+    if is_pc_member:
+        available_roles.append(('pc_member', 'PC Member'))
+    if is_author:
+        available_roles.append(('author', 'Author'))
+    if is_reviewer:
+        available_roles.append(('reviewer', 'Reviewer'))
+    
+    # Get co-chairs (PC members with special designation)
+    co_chairs = UserConferenceRole.objects.filter(
+        conference=conference, 
+        role='pc_member'
+    ).select_related('user').exclude(user=conference.chair)
+    
+    # Navigation items for the conference
+    nav_items = [
+        "Submissions", "Reviews", "Status", "PC", "Events",
+        "Email", "Administration", "Conference", "News", "papersetu"
+    ]
+    
+    context = {
+        'conference': conference,
+        'is_chair': is_chair,
+        'is_pc_member': is_pc_member,
+        'is_author': is_author,
+        'is_reviewer': is_reviewer,
+        'available_roles': available_roles,
+        'co_chairs': co_chairs,
+        'nav_items': nav_items,
+        'active_tab': 'Conference',
+        'today': date.today(),
+    }
+    
+    return render(request, 'dashboard/conference_details.html', context)
 
 @login_required
 def conference_administration(request, conf_id):
