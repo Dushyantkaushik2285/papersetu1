@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conference Submitted</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); font-family: 'Montserrat', sans-serif; }
+        .crazy-bg { background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%); }
+        .crazy-border { border: 2px dashed #6366f1; box-shadow: 0 0 20px #a5b4fc; }
+        .crazy-title { font-family: 'Orbitron', sans-serif; letter-spacing: 2px; text-shadow: 2px 2px 0 #a5b4fc; }
+    </style>
+</head>
+<body>
+<div class="max-w-2xl mx-auto mt-20 p-10 rounded-3xl crazy-bg crazy-border shadow-2xl animate__animated animate__fadeIn">
+    <h2 class="text-4xl crazy-title text-center mb-6 text-indigo-700">🎉 Conference Submitted!</h2>
+    <p class="text-lg text-center mb-4">Thank you for submitting your conference <span class="font-bold text-blue-700">{{ conference.name }}</span>.</p>
+    <p class="text-center text-gray-700 mb-6">Your request has been received and is pending admin approval.<br>
+    An email notification has been sent to the admin/superuser for review.<br>
+    You will be notified by email once your conference is approved.</p>
+    <div class="flex justify-center mt-8">
+        <a href="/dashboard/" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-lg font-bold hover:bg-blue-700 transition-all duration-300">Back to Dashboard</a>
+    </div>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+</body>
+</html> 

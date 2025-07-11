@@ -1,0 +1,28 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">My Recent Roles</h1>
+<table class="min-w-full bg-white rounded shadow">
+  <thead>
+    <tr>
+      <th class="px-4 py-2">Conference Name</th>
+      <th class="px-4 py-2">Role</th>
+      <th class="px-4 py-2">Status</th>
+      <th class="px-4 py-2">Access</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for role in roles %}
+    <tr>
+      <td class="px-4 py-2">{{ role.conference.name }}</td>
+      <td class="px-4 py-2">{{ role.role|title }}</td>
+      <td class="px-4 py-2">{{ role.conference.status|title }}</td>
+      <td class="px-4 py-2">
+        <a href="{% url 'dashboard:chair_conference_detail' role.conference.id %}?role={{ role.role }}" class="text-blue-600 underline">Go</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="text-center text-gray-500 py-4">No roles found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %} 

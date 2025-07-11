@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Author Dashboard - {{ conference.acronym|default:conference.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col">
+    <main class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-extrabold text-blue-700 mb-8 flex items-center gap-3">
+            <i class="fas fa-user-edit text-blue-500"></i> Author Dashboard
+            <span class="text-lg font-normal text-gray-500 ml-4">({{ conference.acronym|default:conference.name }})</span>
+        </h1>
+        {% if message %}
+            <div class="mb-6 p-4 rounded bg-green-100 text-green-800 font-semibold flex items-center gap-2">
+                <i class="fas fa-check-circle"></i> {{ message }}
+            </div>
+        {% endif %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <!-- Upload Paper Form -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-between">
+                <h2 class="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2"><i class="fas fa-upload"></i> Upload Paper</h2>
+                <form method="post" enctype="multipart/form-data" id="uploadPaperForm" autocomplete="off">
+                    {% csrf_token %}
+                    <!-- Dynamic Authors Section -->
+                    <div id="authorsSection">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Author Information</h3>
+                        <div id="authorsList"></div>
+                    </div>
+                    <!-- Paper Details Section -->
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Paper Details</h3>
+                        <label for="title" class="block text-gray-700 font-semibold mb-2">Title <span class="text-red-500">*</span></label>
+                        <input type="text" name="title" id="title" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4" required>
+                        <label for="abstract" class="block text-gray-700 font-semibold mb-2">Abstract <span class="text-red-500">*</span></label>
+                        <textarea name="abstract" id="abstract" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4" required></textarea>
+                        <label for="keywords" class="block text-gray-700 font-semibold mb-2">Keywords <span class="text-red-500">*</span></label>
+                        <input type="text" name="keywords" id="keywords" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4" placeholder="Comma-separated keywords" required>
+                        <label for="file" class="block text-gray-700 font-semibold mb-2">Upload File (PDF only) <span class="text-red-500">*</span></label>
+                        <input type="file" name="file" id="file" accept="application/pdf" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4" required>
+                    </div>
+                    <input type="hidden" name="authors_json" id="authors_json">
+                    <div id="formErrors" class="text-red-600 font-semibold mb-2"></div>
+                    <button type="submit" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium w-full">Upload Paper</button>
+                </form>
+                <script>
+                // Country/Region options (can be replaced with a full list)
+                const countryOptions = [
+                    'United States', 'India', 'United Kingdom', 'Germany', 'France', 'China', 'Japan', 'Canada', 'Australia', 'Other'
+                ];
+                function countryDropdown(name, value) {
+                    let html = `<select name="country_region" class="w-full px-2 py-1 border rounded" required>`;
+                    html += `<option value="">Select Country/Region</option>`;
+                    for (const c of countryOptions) {
+                        html += `<option value="${c}" ${value===c?'selected':''}>${c}</option>`;
+                    }
+                    html += `</select>`;
+                    return html;
+                }
+                // Author block template
+                function authorBlock(idx, data, isLast) {
+                    data = data || {};
+                    return `
+                    <div class="author-block border rounded-xl p-4 mb-4 bg-gray-50 relative">
+                        <h4 class="font-semibold text-blue-700 mb-2">Author ${idx+1}</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">First Name <span class="text-red-500">*</span></label>
+                                <input type="text" name="first_name" class="w-full px-2 py-1 border rounded" value="${data.first_name||''}" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">Last Name <span class="text-red-500">*</span></label>
+                                <input type="text" name="last_name" class="w-full px-2 py-1 border rounded" value="${data.last_name||''}" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">Email <span class="text-red-500">*</span></label>
+                                <input type="email" name="email" class="w-full px-2 py-1 border rounded" value="${data.email||''}" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">Country/Region <span class="text-red-500">*</span></label>
+                                ${countryDropdown('country_region', data.country_region||'')}
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">Affiliation <span class="text-red-500">*</span></label>
+                                <input type="text" name="affiliation" class="w-full px-2 py-1 border rounded" value="${data.affiliation||''}" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">Web Page</label>
+                                <input type="url" name="web_page" class="w-full px-2 py-1 border rounded" value="${data.web_page||''}">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" name="is_corresponding" class="corresponding-checkbox" ${data.is_corresponding?'checked':''}>
+                            <label class="text-sm">Corresponding Author</label>
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            ${isLast ? `<button type="button" class="add-author-btn bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded">Add Author</button>` : ''}
+                            ${idx > 0 ? `<button type="button" class="remove-author-btn bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded">Remove</button>` : ''}
+                        </div>
+                    </div>`;
+                }
+                // Dynamic author logic
+                let authors = [{is_corresponding:true}];
+                function renderAuthors() {
+                    const list = document.getElementById('authorsList');
+                    list.innerHTML = '';
+                    authors.forEach((a, idx) => {
+                        const div = document.createElement('div');
+                        div.innerHTML = authorBlock(idx, a, idx===authors.length-1);
+                        list.appendChild(div);
+                    });
+                    // Add event listeners
+                    document.querySelectorAll('.add-author-btn').forEach((btn, idx) => {
+                        btn.onclick = function() {
+                            authors.push({});
+                            renderAuthors();
+                        };
+                    });
+                    document.querySelectorAll('.remove-author-btn').forEach((btn, idx) => {
+                        btn.onclick = function() {
+                            authors.splice(idx+1, 1);
+                            renderAuthors();
+                        };
+                    });
+                    // Only one corresponding author
+                    document.querySelectorAll('.corresponding-checkbox').forEach((cb, idx) => {
+                        cb.onchange = function() {
+                            if (cb.checked) {
+                                authors.forEach((a, i) => a.is_corresponding = (i===idx));
+                                renderAuthors();
+                            } else {
+                                authors[idx].is_corresponding = false;
+                            }
+                        };
+                    });
+                    // Sync input values to authors array
+                    document.querySelectorAll('#authorsList .author-block').forEach((block, idx) => {
+                        block.querySelectorAll('input,select').forEach(input => {
+                            input.oninput = function() {
+                                authors[idx][input.name] = input.type==='checkbox' ? input.checked : input.value;
+                            };
+                        });
+                    });
+                }
+                renderAuthors();
+                // Form validation and submission
+                document.getElementById('uploadPaperForm').onsubmit = function(e) {
+                    // Validate authors
+                    let valid = true;
+                    let error = '';
+                    if (!authors.length) {
+                        valid = false;
+                        error = 'At least one author is required.';
+                    }
+                    authors.forEach((a, idx) => {
+                        if (!a.first_name || !a.last_name || !a.email || !a.country_region || !a.affiliation) {
+                            valid = false;
+                            error = `Please fill all required fields for Author ${idx+1}.`;
+                        }
+                    });
+                    if (!authors.some(a => a.is_corresponding)) {
+                        valid = false;
+                        error = 'Please select a Corresponding Author.';
+                    }
+                    // Validate paper details
+                    const title = document.getElementById('title').value.trim();
+                    const abstract = document.getElementById('abstract').value.trim();
+                    const keywords = document.getElementById('keywords').value.trim();
+                    const file = document.getElementById('file').files[0];
+                    if (!title || !abstract || !keywords || !file) {
+                        valid = false;
+                        error = 'Please fill all required paper details and upload a PDF.';
+                    }
+                    if (file && file.type !== 'application/pdf') {
+                        valid = false;
+                        error = 'Only PDF files are allowed.';
+                    }
+                    if (!valid) {
+                        document.getElementById('formErrors').textContent = error;
+                        e.preventDefault();
+                        return false;
+                    }
+                    document.getElementById('formErrors').textContent = '';
+                    document.getElementById('authors_json').value = JSON.stringify(authors);
+                };
+                </script>
+            </div>
+            <!-- List of Papers -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-between">
+                <h2 class="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2"><i class="fas fa-file-alt"></i> My Papers</h2>
+                {% if papers %}
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted At</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for paper in papers %}
+                            <tr>
+                                <td class="px-4 py-2 whitespace-nowrap">{{ paper.title }}</td>
+                                <td class="px-4 py-2 whitespace-nowrap">{{ paper.status|title }}</td>
+                                <td class="px-4 py-2 whitespace-nowrap">{{ paper.submitted_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="text-gray-600">No papers submitted yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html> 

@@ -1,0 +1,27 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">My Account Settings</h1>
+<form method="post" class="max-w-lg bg-white rounded shadow p-6 space-y-4">
+  {% csrf_token %}
+  <div>
+    <label class="block font-semibold mb-1">Full Name</label>
+    <input type="text" name="full_name" value="{{ user.get_full_name }}" class="w-full border rounded px-3 py-2">
+  </div>
+  <div>
+    <label class="block font-semibold mb-1">Email</label>
+    <input type="email" name="email" value="{{ user.email }}" class="w-full border rounded px-3 py-2">
+  </div>
+  <div>
+    <label class="block font-semibold mb-1">Affiliation</label>
+    <input type="text" name="affiliation" value="{{ user.profile.affiliation|default:'' }}" class="w-full border rounded px-3 py-2">
+  </div>
+  <div>
+    <label class="block font-semibold mb-1">Password</label>
+    <input type="password" name="password" class="w-full border rounded px-3 py-2" placeholder="New password (leave blank to keep current)">
+  </div>
+  <div class="flex gap-4 mt-4">
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
+    <a href="{% url 'accounts:password_reset_request' %}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded">Reset Password</a>
+  </div>
+</form>
+{% endblock %} 

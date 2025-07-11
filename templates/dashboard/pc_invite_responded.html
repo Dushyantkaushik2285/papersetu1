@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Invitation Response - {{ invite.conference.acronym|default:invite.conference.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col">
+    <main class="container mx-auto px-4 py-8 flex flex-col items-center justify-center">
+        <div class="bg-white rounded-xl shadow-lg p-8 max-w-lg w-full text-center">
+            {% if accepted %}
+                <h1 class="text-2xl font-bold text-green-700 mb-4">Invitation Accepted</h1>
+                <p class="mb-2">Thank you for joining the Program Committee for:</p>
+                <div class="text-xl font-semibold text-blue-900 mb-2">{{ invite.conference.acronym|default:invite.conference.name }}</div>
+                <div class="mb-4 text-gray-700">You now have access as a PC member.</div>
+            {% elif declined %}
+                <h1 class="text-2xl font-bold text-red-700 mb-4">Invitation Declined</h1>
+                <p class="mb-2">You have declined the invitation to join the Program Committee for:</p>
+                <div class="text-xl font-semibold text-blue-900 mb-2">{{ invite.conference.acronym|default:invite.conference.name }}</div>
+            {% else %}
+                <h1 class="text-2xl font-bold text-blue-700 mb-4">Invitation Already Responded</h1>
+                <p class="mb-2">You have already responded to this invitation.</p>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html> 

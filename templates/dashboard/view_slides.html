@@ -1,0 +1,28 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">My Slides</h1>
+<table class="min-w-full bg-white rounded shadow">
+  <thead>
+    <tr>
+      <th class="px-4 py-2">Paper Title</th>
+      <th class="px-4 py-2">Conference</th>
+      <th class="px-4 py-2">Upload Date</th>
+      <th class="px-4 py-2">Download</th>
+      <th class="px-4 py-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for slide in slides %}
+    <tr>
+      <td class="px-4 py-2">{{ slide.paper_title }}</td>
+      <td class="px-4 py-2">{{ slide.conference }}</td>
+      <td class="px-4 py-2">{{ slide.upload_date }}</td>
+      <td class="px-4 py-2"><a href="{{ slide.file_url }}" class="text-blue-600 underline">Download</a></td>
+      <td class="px-4 py-2"><a href="#" class="text-orange-600 underline">Update</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="text-center text-gray-500 py-4">No slides found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %} 

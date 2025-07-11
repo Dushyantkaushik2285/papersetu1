@@ -1,0 +1,7 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-8 text-center">
+  <strong class="font-bold">Access Denied:</strong>
+  <span class="block sm:inline">{{ message|default:'You do not have permission to access this page.' }}</span>
+</div>
+{% endblock %} 

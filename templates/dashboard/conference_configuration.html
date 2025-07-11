@@ -1,0 +1,428 @@
+{% load dashboard_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ conference.name }} - Configuration Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-white shadow mb-8 border-b border-gray-200 sticky top-0 z-30 w-full">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-blue-700">
+                <svg class="w-24 h-auto mr-2 inline" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Paper icon -->
+                    <rect x="5" y="10" width="15" height="20" fill="#1e40af" rx="2"/>
+                    <line x1="8" y1="15" x2="17" y2="15" stroke="white" stroke-width="1"/>
+                    <line x1="8" y1="18" x2="17" y2="18" stroke="white" stroke-width="1"/>
+                    <line x1="8" y1="21" x2="17" y2="21" stroke="white" stroke-width="1"/>
+                    <line x1="8" y1="24" x2="14" y2="24" stroke="white" stroke-width="1"/>
+                    <!-- Text -->
+                    <text x="25" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e40af">PaperSetu</text>
+                </svg>
+            </div>
+            <ul class="flex space-x-6">
+                <li class="border-r border-gray-300 pr-4"><a href="/home/" class="hover:text-blue-600">Home</a></li>
+                {% if user.is_authenticated %}
+                    <li class="border-r border-gray-300 pr-4"><a href="/accounts/logout/">Logout</a></li>
+                    <li class="relative">
+                        <button id="profileBtn" class="focus:outline-none">
+                            <img src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}" alt="Profile" class="w-8 h-8 rounded-full border border-gray-300">
+                        </button>
+                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <div class="font-semibold">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="text-xs text-gray-500">{{ user.email }}</div>
+                            </div>
+                            <a href="/accounts/settings/" class="block px-4 py-2 hover:bg-gray-100">Settings</a>
+                        </div>
+                    </li>
+                {% else %}
+                    <li><a href="/accounts/login/" class="hover:text-blue-600">Login</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container mx-auto px-4">
+        <!-- Conference Navigation Bar -->
+        <nav class="bg-white shadow rounded mb-8 border border-gray-200">
+            <ul class="flex flex-wrap md:flex-nowrap justify-start md:justify-center items-center overflow-x-auto text-sm font-semibold">
+                {% for item in nav_items %}
+                    <li class="m-1">
+                        {% if item == 'Conference' %}
+                            <a href="{% url 'dashboard:conference_configuration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-blue-600 text-white shadow">Conference</a>
+                        {% elif item == 'Submissions' %}
+                            <a href="{% url 'dashboard:conference_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Submissions</a>
+                        {% elif item == 'Administration' %}
+                            <a href="{% url 'dashboard:conference_administration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Administration</a>
+                        {% elif item == 'PC' %}
+                            <a href="{% url 'dashboard:pc_list' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">PC</a>
+                        {% elif item == 'Reviews' %}
+                            <a href="{% url 'dashboard:all_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">Reviews</a>
+                        {% else %}
+                            <a href="#" class="block px-4 py-2 rounded transition-all duration-150 bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700">{{ item }}</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <!-- Conference Header -->
+        <section class="bg-white rounded-lg shadow p-6 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2 text-blue-700">Conference Configuration</h1>
+                    <p class="text-gray-600 mb-2">{{ conference.name }} ({{ conference.acronym }})</p>
+                    <p class="text-sm text-gray-500">Configure all settings for your conference</p>
+                </div>
+                <div class="text-right">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                        {% if conference.status == 'upcoming' %}bg-yellow-100 text-yellow-800
+                        {% elif conference.status == 'live' %}bg-green-100 text-green-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ conference.status|title }}
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-8">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg mb-4 {% if message.tags == 'success' %}bg-green-100 border border-green-400 text-green-700{% elif message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700{% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Configuration Sections -->
+        <div class="space-y-8">
+            
+            <!-- Conference Information -->
+            <section class="bg-white rounded-lg shadow" x-data="{ open: true }">
+                <div class="px-6 py-4 border-b border-gray-200 cursor-pointer" @click="open = !open">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                            Conference Information
+                        </h2>
+                        <i class="fas fa-chevron-down transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                    </div>
+                </div>
+                <div x-show="open" x-transition class="p-6">
+                    <form method="post" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="section" value="conference_info">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for field in forms.conference_info %}
+                                <div class="{% if field.name == 'description' %}md:col-span-2{% endif %}">
+                                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Save Conference Information
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Submission Settings -->
+            <section class="bg-white rounded-lg shadow" x-data="{ open: false }">
+                <div class="px-6 py-4 border-b border-gray-200 cursor-pointer" @click="open = !open">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-file-upload text-green-600 mr-2"></i>
+                            Submission Settings
+                        </h2>
+                        <i class="fas fa-chevron-down transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                    </div>
+                </div>
+                <div x-show="open" x-transition class="p-6">
+                    <form method="post" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="section" value="submission_settings">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for field in forms.submission_settings %}
+                                <div class="{% if field.field.widget.input_type == 'checkbox' %}flex items-center space-x-2{% endif %}">
+                                    {% if field.field.widget.input_type == 'checkbox' %}
+                                        {{ field }}
+                                        <label for="{{ field.id_for_label }}" class="text-sm font-medium text-gray-700">
+                                            {{ field.label }}
+                                        </label>
+                                    {% else %}
+                                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                            {{ field.label }}
+                                        </label>
+                                        {{ field }}
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                Save Submission Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Reviewing Settings -->
+            <section class="bg-white rounded-lg shadow" x-data="{ open: false }">
+                <div class="px-6 py-4 border-b border-gray-200 cursor-pointer" @click="open = !open">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-search text-purple-600 mr-2"></i>
+                            Reviewing Settings
+                        </h2>
+                        <i class="fas fa-chevron-down transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                    </div>
+                </div>
+                <div x-show="open" x-transition class="p-6">
+                    <form method="post" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="section" value="reviewing_settings">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for field in forms.reviewing_settings %}
+                                <div class="{% if field.field.widget.input_type == 'checkbox' %}flex items-center space-x-2{% endif %}">
+                                    {% if field.field.widget.input_type == 'checkbox' %}
+                                        {{ field }}
+                                        <label for="{{ field.id_for_label }}" class="text-sm font-medium text-gray-700">
+                                            {{ field.label }}
+                                        </label>
+                                    {% else %}
+                                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                            {{ field.label }}
+                                        </label>
+                                        {{ field }}
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                Save Reviewing Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Rebuttal Settings -->
+            <section class="bg-white rounded-lg shadow" x-data="{ open: false }">
+                <div class="px-6 py-4 border-b border-gray-200 cursor-pointer" @click="open = !open">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-reply text-orange-600 mr-2"></i>
+                            Rebuttal Settings
+                        </h2>
+                        <i class="fas fa-chevron-down transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                    </div>
+                </div>
+                <div x-show="open" x-transition class="p-6">
+                    <form method="post" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="section" value="rebuttal_settings">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for field in forms.rebuttal_settings %}
+                                <div class="{% if field.field.widget.input_type == 'checkbox' %}flex items-center space-x-2{% endif %}">
+                                    {% if field.field.widget.input_type == 'checkbox' %}
+                                        {{ field }}
+                                        <label for="{{ field.id_for_label }}" class="text-sm font-medium text-gray-700">
+                                            {{ field.label }}
+                                        </label>
+                                    {% else %}
+                                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                            {{ field.label }}
+                                        </label>
+                                        {{ field }}
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                Save Rebuttal Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Decision Settings -->
+            <section class="bg-white rounded-lg shadow" x-data="{ open: false }">
+                <div class="px-6 py-4 border-b border-gray-200 cursor-pointer" @click="open = !open">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-gavel text-red-600 mr-2"></i>
+                            Decision & Final Deadlines
+                        </h2>
+                        <i class="fas fa-chevron-down transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                    </div>
+                </div>
+                <div x-show="open" x-transition class="p-6">
+                    <form method="post" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="section" value="decision_settings">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for field in forms.decision_settings %}
+                                <div>
+                                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                Save Decision Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Email Templates -->
+            <section class="bg-white rounded-lg shadow" x-data="{ open: false }">
+                <div class="px-6 py-4 border-b border-gray-200 cursor-pointer" @click="open = !open">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-envelope text-indigo-600 mr-2"></i>
+                            Email Templates
+                        </h2>
+                        <i class="fas fa-chevron-down transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                    </div>
+                </div>
+                <div x-show="open" x-transition class="p-6">
+                    <div class="space-y-6">
+                        {% for template_type, template in email_templates.items %}
+                            <div class="border border-gray-200 rounded-lg p-4" x-data="{ templateOpen: false }">
+                                <div class="flex justify-between items-center cursor-pointer" @click="templateOpen = !templateOpen">
+                                    <h3 class="text-lg font-medium text-gray-900">
+                                        {{ template.get_template_type_display }}
+                                    </h3>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs rounded-full {% if template.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                            {% if template.is_active %}Active{% else %}Inactive{% endif %}
+                                        </span>
+                                        <i class="fas fa-chevron-down transition-transform duration-200" :class="{'rotate-180': templateOpen}"></i>
+                                    </div>
+                                </div>
+                                <div x-show="templateOpen" x-transition class="mt-4">
+                                    <form method="post" class="space-y-4">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="section" value="email_template">
+                                        <input type="hidden" name="template_type" value="{{ template_type }}">
+                                        {% for field in email_template_forms|lookup:template_type %}
+                                                <div class="{% if field.name == 'body' %}{% endif %}">
+                                                    {% if field.field.widget.input_type == 'checkbox' %}
+                                                        <div class="flex items-center space-x-2">
+                                                            {{ field }}
+                                                            <label for="{{ field.id_for_label }}" class="text-sm font-medium text-gray-700">
+                                                                {{ field.label }}
+                                                            </label>
+                                                        </div>
+                                                    {% else %}
+                                                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                                            {{ field.label }}
+                                                        </label>
+                                                        {{ field }}
+                                                    {% endif %}
+                                                    {% if field.help_text %}
+                                                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                                                    {% endif %}
+                                                    {% if field.errors %}
+                                                        <p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>
+                                                    {% endif %}
+                                                </div>
+                                        {% endfor %}
+                                        <div class="flex justify-end">
+                                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                                Save Template
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // Profile dropdown logic
+        const profileBtn = document.getElementById('profileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        if (profileBtn && profileDropdown) {
+            profileBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', function() {
+                profileDropdown.classList.add('hidden');
+            });
+        }
+
+        // Add Tailwind classes to form fields
+        document.addEventListener('DOMContentLoaded', function() {
+            // Style text inputs
+            const textInputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="datetime-local"], textarea, select');
+            textInputs.forEach(input => {
+                input.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-gray-300', 'rounded-md', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500', 'focus:border-blue-500');
+            });
+
+            // Style checkboxes
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.classList.add('rounded', 'border-gray-300', 'text-blue-600', 'focus:ring-blue-500', 'focus:ring-2');
+            });
+        });
+    </script>
+</body>
+</html>

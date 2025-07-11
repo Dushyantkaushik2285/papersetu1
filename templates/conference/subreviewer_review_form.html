@@ -1,0 +1,44 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<div class="bg-white rounded shadow p-6 max-w-lg mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-4 text-blue-700">Review Paper: {{ invite.paper.title }}</h1>
+    <div class="mb-4 flex items-center space-x-2">
+        <span class="font-semibold">Status:</span>
+        <span class="px-2 py-1 rounded text-xs {% if invite.status == 'accepted' %}bg-green-100 text-green-800{% elif invite.status == 'declined' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ invite.status|title }}</span>
+    </div>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label class="block font-semibold mb-1">Decision</label>
+            <div class="flex space-x-4">
+                <label class="inline-flex items-center">
+                    <input type="radio" name="decision" value="accept" class="form-radio text-green-600" required>
+                    <span class="ml-2">Accept</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="decision" value="reject" class="form-radio text-red-600" required>
+                    <span class="ml-2">Reject</span>
+                </label>
+            </div>
+        </div>
+        <div>
+            <label class="block font-semibold mb-1">Rating</label>
+            {{ form.rating }}
+        </div>
+        <div>
+            <label class="block font-semibold mb-1">Comments</label>
+            {{ form.comments }}
+        </div>
+        <div>
+            <label class="block font-semibold mb-1">Reviewer Confidence</label>
+            {{ form.confidence }}
+        </div>
+        <div>
+            <label class="block font-semibold mb-1">Remarks for PC Member</label>
+            {{ form.remarks }}
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit Review</button>
+    </form>
+    <a href="{% url 'conference:subreviewer_dashboard' invite.paper.conference.id %}" class="inline-block mt-6 text-blue-600 hover:underline">Back to Dashboard</a>
+</div>
+{% endblock %} 

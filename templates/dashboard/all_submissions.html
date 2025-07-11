@@ -1,0 +1,18 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<div class="bg-white rounded shadow p-6 mb-6">
+  <h1 class="text-2xl font-bold mb-4 text-blue-700">Review Management</h1>
+  <div class="flex flex-wrap gap-4 mb-6">
+    <a href="{% url 'dashboard:all_submissions' conference.id %}" class="bg-blue-600 text-white px-4 py-2 rounded">All Submissions</a>
+    <a href="{% url 'dashboard:assigned_to_me' conference.id %}" class="bg-blue-600 text-white px-4 py-2 rounded">Assigned to Me</a>
+    <a href="{% url 'dashboard:subreviewers' conference.id %}" class="bg-blue-600 text-white px-4 py-2 rounded">Subreviewers</a>
+    <a href="{% url 'dashboard:pool_subreviewers' conference.id %}" class="bg-blue-600 text-white px-4 py-2 rounded">Pool of Subreviewers</a>
+    <a href="{% url 'dashboard:by_pc_member' conference.id %}" class="bg-blue-600 text-white px-4 py-2 rounded">By PC Member</a>
+    <a href="{% url 'dashboard:by_submission' conference.id %}" class="bg-blue-600 text-white px-4 py-2 rounded">By Submission</a>
+    <a href="{% url 'dashboard:delete_review' conference.id %}" class="bg-blue-600 text-white px-4 py-2 rounded">Delete Review</a>
+    <a href="{% url 'dashboard:send_to_authors' conference.id %}" class="bg-blue-600 text-white px-4 py-2 rounded">Send to Authors</a>
+    <a href="{% url 'dashboard:missing_reviews' conference.id %}" class="bg-blue-600 text-white px-4 py-2 rounded">Missing Reviews</a>
+  </div>
+</div>
+<!-- Existing review content below -->
+{% endblock %} 

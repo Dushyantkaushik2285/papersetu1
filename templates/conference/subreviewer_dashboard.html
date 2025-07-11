@@ -1,0 +1,64 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<div class="bg-white rounded shadow p-6">
+    <h1 class="text-2xl font-bold mb-4 text-blue-700">Subreviewer Dashboard</h1>
+    <nav class="mb-6">
+        <ul class="flex space-x-6 border-b pb-2">
+            {% for tab in nav_tabs %}
+                <li>
+                    <a href="#" class="{% if tab.active %}font-semibold text-blue-700 border-b-2 border-blue-700 pb-1{% else %}text-gray-600 hover:text-blue-700{% endif %}">{{ tab.label }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    <div>
+        <h2 class="text-lg font-semibold mb-4">Assigned Papers</h2>
+        {% if assigned_papers %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for item in assigned_papers %}
+                <div class="bg-gray-50 rounded-lg shadow p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xl font-semibold text-gray-800">{{ item.paper.title }}</span>
+                            <span class="ml-2 px-2 py-1 rounded text-xs font-bold
+                                {% if item.status == 'accepted' %}bg-green-100 text-green-800
+                                {% elif item.status == 'declined' %}bg-red-100 text-red-800
+                                {% elif item.status == 'invited' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-200 text-gray-700{% endif %}">
+                                {% if item.status == 'accepted' and item.review_status == 'Completed' %}
+                                    <svg class="inline w-4 h-4 text-green-600 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                    Completed
+                                {% else %}
+                                    {{ item.status|title }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="mb-2 text-sm text-gray-600">Conference: {{ conference.name }}</div>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-2">
+                        <a href="{% url 'conference:download_paper' item.paper.id %}" class="inline-flex items-center bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-sm font-medium" title="Download Paper">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" /></svg>
+                            Download
+                        </a>
+                        {% if item.can_answer %}
+                            <a href="{% url 'conference:subreviewer_answer_request' item.invite.id %}" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm font-medium">Answer Request</a>
+                        {% elif item.can_review %}
+                            <a href="{% url 'conference:subreviewer_review_form' item.invite.id %}" class="bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm font-medium">Review</a>
+                        {% elif item.review_status == 'Completed' %}
+                            <span class="bg-green-500 text-white px-3 py-1 rounded text-sm font-medium flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                Completed
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400 text-sm">-</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-gray-500">No papers assigned to you for review.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

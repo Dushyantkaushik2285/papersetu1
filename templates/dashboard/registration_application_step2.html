@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Registration Application - Step {{ step }} | {{ conference.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-white shadow mb-8 border-b border-gray-200">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="text-2xl font-bold text-blue-700">
+            PaperSetu
+        </div>
+        <ul class="flex space-x-6">
+            <li><a href="/home/" class="hover:text-blue-600">Home</a></li>
+            <li><a href="/accounts/logout/">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+<main class="container mx-auto px-4 max-w-4xl">
+    <!-- Progress Indicator -->
+    <div class="mb-8">
+        <div class="flex items-center">
+            <div class="flex items-center text-gray-400">
+                <div class="rounded-full bg-gray-300 text-gray-600 w-8 h-8 flex items-center justify-center text-sm font-semibold">1</div>
+                <span class="ml-2 text-sm font-medium">Basic Information</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-gray-300 mx-4"></div>
+            <div class="flex items-center text-blue-600">
+                <div class="rounded-full bg-blue-600 text-white w-8 h-8 flex items-center justify-center text-sm font-semibold">2</div>
+                <span class="ml-2 text-sm font-medium">Details & Confirmation</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conference Header -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Registration Application</h1>
+        <p class="text-gray-600">Provide additional details for your registration requirements.</p>
+        <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+            <h3 class="font-semibold text-blue-900">{{ conference.name }}</h3>
+            <p class="text-blue-700 text-sm">{{ conference.start_date }} - {{ conference.end_date }}</p>
+            <p class="text-blue-700 text-sm">{{ conference.venue }}, {{ conference.city }}</p>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <form method="post" class="bg-white rounded-lg shadow p-6 space-y-6">
+        {% csrf_token %}
+        
+        <!-- Display form errors if any -->
+        {% if form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 rounded-md p-4">
+                <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <!-- Form fields -->
+        {% for field in form %}
+            <div class="space-y-2">
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                        <span class="text-red-500">*</span>
+                    {% endif %}
+                </label>
+                
+                {% if field.field.widget.input_type == 'checkbox' %}
+                    <div class="flex items-center">
+                        {{ field }}
+                        <label for="{{ field.id_for_label }}" class="ml-2 text-sm text-gray-600">
+                            {{ field.help_text }}
+                        </label>
+                    </div>
+                {% elif field.field.widget.input_type == 'textarea' %}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="text-sm text-gray-500">{{ field.help_text }}</p>
+                    {% endif %}
+                {% else %}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="text-sm text-gray-500">{{ field.help_text }}</p>
+                    {% endif %}
+                {% endif %}
+                
+                {% if field.errors %}
+                    <div class="text-sm text-red-600">
+                        {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div class="flex justify-between pt-6">
+            <a href="{% url 'dashboard:registration_application_step1' conference.id %}"
+               class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                &larr; Back to Step 1
+            </a>
+            <button type="submit"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Submit Application
+            </button>
+        </div>
+    </form>
+</main>
+
+<style>
+    /* Custom styling for form fields */
+    input[type="text"], input[type="email"], input[type="number"], input[type="date"], textarea, select {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    }
+    
+    input[type="checkbox"] {
+        @apply h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+    }
+    
+    textarea {
+        @apply resize-vertical;
+        min-height: 100px;
+    }
+</style>
+</body>
+</html>

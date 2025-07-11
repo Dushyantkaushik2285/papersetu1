@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ conference.name }} - Conference Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-white shadow mb-8 border-b border-gray-200 sticky top-0 z-30 w-full">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-blue-700">
+                <svg class="w-24 h-auto mr-2 inline" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Paper icon -->
+                    <rect x="5" y="10" width="15" height="20" fill="#1e40af" rx="2"/>
+                    <line x1="8" y1="15" x2="17" y2="15" stroke="white" stroke-width="1"/>
+                    <line x1="8" y1="18" x2="17" y2="18" stroke="white" stroke-width="1"/>
+                    <line x1="8" y1="21" x2="17" y2="21" stroke="white" stroke-width="1"/>
+                    <line x1="8" y1="24" x2="14" y2="24" stroke="white" stroke-width="1"/>
+                    <!-- Text -->
+                    <text x="25" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e40af">PaperSetu</text>
+                </svg>
+            </div>
+            <ul class="flex space-x-6">
+                <li class="border-r border-gray-300 pr-4"><a href="/home/" class="hover:text-blue-600">Home</a></li>
+                {% if user.is_authenticated %}
+                    <li class="border-r border-gray-300 pr-4"><a href="/accounts/logout/">Logout</a></li>
+                    <li class="relative">
+                        <button id="profileBtn" class="focus:outline-none">
+                            <img src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}" alt="Profile" class="w-8 h-8 rounded-full border border-gray-300">
+                        </button>
+                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <div class="font-semibold">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="text-xs text-gray-500">{{ user.email }}</div>
+                            </div>
+                            <a href="/accounts/settings/" class="block px-4 py-2 hover:bg-gray-100">Settings</a>
+                        </div>
+                    </li>
+                {% else %}
+                    <li><a href="/accounts/login/" class="hover:text-blue-600">Login</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <main class="container mx-auto px-4">
+        {% block nav %}
+        <nav class="bg-white shadow rounded mb-8 border border-gray-200 relative">
+            <ul class="flex flex-wrap md:flex-nowrap justify-start md:justify-center items-center overflow-x-auto text-sm font-semibold">
+                {% for item in nav_items %}
+                    <li class="m-1 relative">
+                        {% if item == 'PC' %}
+                        <a href="{% url 'dashboard:pc_list' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">PC</a>
+                        {% elif item == 'Submissions' %}
+                        <a href="{% url 'dashboard:conference_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Submissions</a>
+                        {% elif item == 'Administration' %}
+                        <a href="{% url 'dashboard:conference_administration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Administration</a>
+                        {% elif item == 'Conference' %}
+                        <a href="{% url 'dashboard:conference_configuration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Conference</a>
+                        {% elif item == 'Reviews' %}
+                        <a href="{% url 'dashboard:all_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Reviews</a>
+                        {% elif item == 'Status' %}
+                        <a href="{% url 'dashboard:status_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Status</a>
+                        {% elif item == 'Events' %}
+                        <a href="{% url 'dashboard:events_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Events</a>
+                        {% elif item == 'Email' %}
+                        <a href="{% url 'dashboard:email_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Email</a>
+                        {% elif item == 'News' %}
+                        <a href="{% url 'dashboard:news_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">News</a>
+                        {% elif item == 'papersetu' %}
+                        <a href="{% url 'dashboard:papersetu_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">papersetu</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+        {% endblock %}
+        <!-- Conference Info Section -->
+        <section class="bg-white rounded-lg shadow p-8 mb-8">
+            <h1 class="text-3xl font-bold mb-4 text-blue-700">Conference Information</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div><span class="font-semibold">Title:</span> {{ conference.name }}</div>
+                <div><span class="font-semibold">Acronym:</span> {{ conference.acronym }}</div>
+                <div><span class="font-semibold">Web Page:</span> <a href="{{ conference.web_page }}" class="text-blue-600 underline" target="_blank">{{ conference.web_page }}</a></div>
+                <div><span class="font-semibold">Venue:</span> {{ conference.venue }}</div>
+                <div><span class="font-semibold">City:</span> {{ conference.city }}</div>
+                <div><span class="font-semibold">Country/Region:</span> {{ conference.country }}</div>
+                <div><span class="font-semibold">Estimated Submissions:</span> {{ conference.estimated_submissions }}</div>
+                <div><span class="font-semibold">First Day:</span> {{ conference.start_date }}</div>
+                <div><span class="font-semibold">Last Day:</span> {{ conference.end_date }}</div>
+                <div><span class="font-semibold">Primary Area:</span> {{ conference.get_primary_area_display }}</div>
+                <div><span class="font-semibold">Secondary Area:</span> {{ conference.get_secondary_area_display }}</div>
+                <div><span class="font-semibold">Area Notes:</span> {{ conference.area_notes }}</div>
+                <div><span class="font-semibold">Organizer:</span> {{ conference.organizer }}</div>
+                <div><span class="font-semibold">Organizer Web Page:</span> <a href="{{ conference.organizer_web_page }}" class="text-blue-600 underline" target="_blank">{{ conference.organizer_web_page }}</a></div>
+                <div><span class="font-semibold">Contact Phone:</span> {{ conference.contact_phone }}</div>
+                <div><span class="font-semibold">Your Role:</span> {{ conference.role }}</div>
+                <div><span class="font-semibold">Other Info:</span> {{ conference.other_info }}</div>
+                <div><span class="font-semibold">Theme/Domain:</span> {{ conference.domain }}</div>
+                <div><span class="font-semibold">Description:</span> {{ conference.description }}</div>
+                <div><span class="font-semibold">Paper Submission Deadline:</span> {{ conference.paper_submission_deadline }}</div>
+                <div><span class="font-semibold">Paper Format:</span> {{ conference.paper_format|upper }}</div>
+                <div><span class="font-semibold">Registration Fee:</span> ₹{{ conference.registration_fee }}</div>
+            </div>
+            <div class="text-gray-600 mb-2">Status: <span class="font-semibold">{{ conference.status|title }}</span></div>
+            <div class="mb-4">
+                <span class="font-semibold">Invite Link:</span>
+                <input type="text" value="{{ invite_url }}" readonly class="w-full px-2 py-1 border rounded text-xs">
+            </div>
+        </section>
+
+        <!-- Messages Section -->
+        {% if assign_message %}
+            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">{{ assign_message }}</div>
+        {% endif %}
+        {% if invite_message %}
+            <div class="mb-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">{{ invite_message }}</div>
+        {% endif %}
+
+        <!-- Authors Table -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold mb-4">Conference Authors</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded shadow">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Papers Submitted</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for author in authors %}
+                        <tr>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ author.user.get_full_name|default:"N/A" }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ author.user.username }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ author.user.email }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ papers|length }} paper{{ papers|length|pluralize }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ author.joined_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="px-4 py-4 text-gray-500 text-center">No authors joined yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Reviewers Table -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold mb-4">Conference Reviewers</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded shadow">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expertise</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Papers Assigned</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for invite in review_invites %}
+                        <tr>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ invite.reviewer.get_full_name|default:"N/A" }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ invite.reviewer.username }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ invite.reviewer.email }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ invite.reviewer.reviewer_profile.expertise|default:"N/A" }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                {% if invite.status == 'pending' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                {% elif invite.status == 'accepted' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Accepted</span>
+                                {% elif invite.status == 'declined' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Declined</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {% if invite.status == 'accepted' %}
+                                    {{ papers|length }} paper{{ papers|length|pluralize }}
+                                {% else %}
+                                    0 papers
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="px-4 py-4 text-gray-500 text-center">No reviewers invited yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Invite Reviewers Section -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold mb-4">Invite Reviewers</h2>
+            <div class="bg-white rounded shadow p-6">
+                <!-- Search Form -->
+                <form method="get" class="mb-4 flex space-x-2">
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search reviewers by name, username, or email..." class="border rounded px-3 py-2 flex-1">
+                    <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Search</button>
+                    {% if search_query %}
+                        <a href="?search=" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Clear</a>
+                    {% endif %}
+                </form>
+                
+                <!-- Invite Form -->
+                <form method="post" class="flex space-x-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="invite_reviewer">
+                    <select name="reviewer_username" class="border rounded px-3 py-2 flex-1" required>
+                        <option value="">Select a reviewer to invite...</option>
+                        {% for reviewer in available_reviewers %}
+                            <option value="{{ reviewer.username }}">
+                                {{ reviewer.get_full_name|default:reviewer.username }} ({{ reviewer.username }}) - {{ reviewer.reviewer_profile.expertise }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Invite Reviewer</button>
+                </form>
+                
+                {% if search_query %}
+                    <p class="text-sm text-gray-600 mt-2">Showing {{ available_reviewers.count }} reviewer(s) matching "{{ search_query }}".</p>
+                {% elif available_reviewers %}
+                    <p class="text-sm text-gray-600 mt-2">Select a reviewer from the list above to invite them to review papers for this conference.</p>
+                {% else %}
+                    <p class="text-sm text-gray-600 mt-2">No available reviewers found. All reviewers have already been invited or are already part of this conference.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Assign Papers to Reviewers Section -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold mb-4">Assign Papers to Accepted Reviewers</h2>
+            <div class="bg-white rounded shadow p-6">
+                <form method="post" action="{% url 'dashboard:bulk_assign_papers' %}" id="bulkAssignForm">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Papers:</label>
+                            <div class="space-y-2 max-h-40 overflow-y-auto border rounded p-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="selectAllPapers" class="rounded border-gray-300">
+                                    <span class="ml-2 text-sm font-medium">Select All Papers</span>
+                                </label>
+                                {% for paper in papers %}
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="papers" value="{{ paper.id }}" class="paper-checkbox rounded border-gray-300">
+                                        <span class="ml-2 text-sm">{{ paper.title }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Accepted Reviewers:</label>
+                            <div class="space-y-2 max-h-40 overflow-y-auto border rounded p-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="selectAllReviewers" class="rounded border-gray-300">
+                                    <span class="ml-2 text-sm font-medium">Select All Accepted Reviewers</span>
+                                </label>
+                                {% for invite in review_invites %}
+                                    {% if invite.status == 'accepted' %}
+                                        <label class="flex items-center">
+                                            <input type="checkbox" name="reviewers" value="{{ invite.reviewer.id }}" class="reviewer-checkbox rounded border-gray-300">
+                                            <span class="ml-2 text-sm">{{ invite.reviewer.get_full_name|default:invite.reviewer.username }} ({{ invite.reviewer.reviewer_profile.expertise }})</span>
+                                        </label>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Assign Selected Papers to Selected Reviewers</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Papers Table -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold mb-4">Submitted Papers</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded shadow">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Abstract</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted Date</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reviewers Assigned</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for paper in papers %}
+                        <tr>
+                            <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ paper.title }}</td>
+                            <td class="px-4 py-4 text-sm text-gray-500">{{ paper.author.get_full_name|default:paper.author.username }}</td>
+                            <td class="px-4 py-4 text-sm text-gray-500">{{ paper.abstract|truncatewords:10 }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                {% if paper.status == 'submitted' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Submitted</span>
+                                {% elif paper.status == 'accepted' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Accepted</span>
+                                {% elif paper.status == 'rejected' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ paper.submitted_at|date:"M d, Y" }}</td>
+                            <td class="px-4 py-4 text-sm text-gray-500">
+                                {% for review in paper.reviews.all %}
+                                    <span class="inline-block bg-gray-200 rounded px-2 py-1 text-xs mr-1 mb-1">
+                                        {{ review.reviewer.username }}
+                                        {% if review.decision %}
+                                            ({{ review.decision|title }})
+                                        {% else %}
+                                            (Pending)
+                                        {% endif %}
+                                    </span>
+                                {% empty %}
+                                    <span class="text-gray-400">None</span>
+                                {% endfor %}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button class="view-details-btn bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700" data-paper-id="{{ paper.id }}">
+                                    View Details
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="px-4 py-4 text-gray-500 text-center">No papers submitted yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Paper Assignment Modal -->
+        <div id="assignmentModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative">
+                <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">&times;</button>
+                <div id="modalContent">
+                    <!-- Content will be filled by JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    // Profile dropdown logic
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    if(profileBtn && profileDropdown) {
+        profileBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', function() {
+            profileDropdown.classList.add('hidden');
+        });
+    }
+
+    // Modal logic for paper assignment
+    const modal = document.getElementById('assignmentModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalContent = document.getElementById('modalContent');
+    
+    if (modal && closeModalBtn && modalContent) {
+        document.querySelectorAll('.view-details-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const paperId = this.getAttribute('data-paper-id');
+                const paperRow = this.closest('tr');
+                const paperTitle = paperRow.querySelector('td:first-child').textContent;
+                const paperAuthor = paperRow.querySelector('td:nth-child(2)').textContent;
+                
+                let html = `<h2 class='text-xl font-bold mb-4 text-blue-700'>${paperTitle}</h2>`;
+                html += `<div class='mb-4 text-gray-600'>Author: ${paperAuthor}</div>`;
+                html += `<h3 class='font-semibold mb-2'>Assign Paper to Reviewer</h3>`;
+                html += `<form method='post' class='space-y-4'>`;
+                html += `<input type='hidden' name='action' value='assign_paper'>`;
+                html += `<input type='hidden' name='paper_id' value='${paperId}'>`;
+                html += `<div class='flex space-x-2'>`;
+                html += `<select name='reviewer_username' class='border rounded px-3 py-2 flex-1' required>`;
+                html += `<option value=''>Select a reviewer...</option>`;
+                
+                // Get accepted reviewers from the page
+                const acceptedReviewers = [];
+                document.querySelectorAll('tbody tr').forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 5) {
+                        const statusCell = cells[4];
+                        if (statusCell.textContent.includes('Accepted')) {
+                            const username = cells[1].textContent.trim();
+                            const name = cells[0].textContent.trim();
+                            acceptedReviewers.push({username, name});
+                        }
+                    }
+                });
+                
+                acceptedReviewers.forEach(reviewer => {
+                    html += `<option value='${reviewer.username}'>${reviewer.name} (${reviewer.username})</option>`;
+                });
+                
+                html += `</select>`;
+                html += `<button type='submit' class='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700'>Assign</button>`;
+                html += `</div>`;
+                html += `</form>`;
+                
+                modalContent.innerHTML = html;
+                modal.classList.remove('hidden');
+            });
+        });
+        
+        closeModalBtn.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+        
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+
+    // Bulk assignment functionality
+    const selectAllPapers = document.getElementById('selectAllPapers');
+    const selectAllReviewers = document.getElementById('selectAllReviewers');
+    const paperCheckboxes = document.querySelectorAll('.paper-checkbox');
+    const reviewerCheckboxes = document.querySelectorAll('.reviewer-checkbox');
+
+    if (selectAllPapers) {
+        selectAllPapers.addEventListener('change', function() {
+            paperCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+
+    if (selectAllReviewers) {
+        selectAllReviewers.addEventListener('change', function() {
+            reviewerCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+
+    // Update select all checkboxes when individual checkboxes change
+    paperCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (!this.checked) {
+                selectAllPapers.checked = false;
+            } else {
+                const allChecked = Array.from(paperCheckboxes).every(cb => cb.checked);
+                selectAllPapers.checked = allChecked;
+            }
+        });
+    });
+
+    reviewerCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (!this.checked) {
+                selectAllReviewers.checked = false;
+            } else {
+                const allChecked = Array.from(reviewerCheckboxes).every(cb => cb.checked);
+                selectAllReviewers.checked = allChecked;
+            }
+        });
+    });
+
+    // Handle bulk assignment form submission
+    const bulkAssignForm = document.getElementById('bulkAssignForm');
+    if (bulkAssignForm) {
+        bulkAssignForm.addEventListener('submit', function(e) {
+            const selectedPapers = Array.from(paperCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            const selectedReviewers = Array.from(reviewerCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            
+            if (selectedPapers.length === 0 || selectedReviewers.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one paper and one reviewer.');
+                return;
+            }
+            
+            // Form will submit normally with the selected values
+        });
+    }
+    </script>
+</body>
+</html> 

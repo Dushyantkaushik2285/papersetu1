@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Member Dashboard - {{ conference.acronym|default:conference.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col">
+    <nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="/home/" class="flex items-center space-x-2">
+                    <svg class="w-24 h-auto mr-2" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="5" y="10" width="15" height="20" fill="#1e40af" rx="2"/>
+                        <line x1="8" y1="15" x2="17" y2="15" stroke="white" stroke-width="1"/>
+                        <line x1="8" y1="18" x2="17" y2="18" stroke="white" stroke-width="1"/>
+                        <line x1="8" y1="21" x2="17" y2="21" stroke="white" stroke-width="1"/>
+                        <line x1="8" y1="24" x2="14" y2="24" stroke="white" stroke-width="1"/>
+                        <text x="25" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e40af">PaperSetu</text>
+                    </svg>
+                </a>
+                <span class="text-xl font-bold text-blue-700 ml-4">{{ conference.acronym|default:conference.name }}</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <a href="/home/" class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/dashboard/" class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-file-alt"></i>
+                    <span>PaperSetu</span>
+                </a>
+                <a href="#" class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-newspaper"></i>
+                    <span>News</span>
+                </a>
+                <a href="/accounts/logout/" class="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        <div class="bg-blue-700">
+            <div class="container mx-auto px-4">
+                <ul class="flex space-x-8 py-3">
+                    <li><span class="text-white font-semibold">Submissions</span></li>
+                    <li><a href="{% url 'dashboard:pc_subreviewers' conference.id %}" class="text-white font-semibold hover:underline">Reviews</a></li>
+                    <li><a href="#" class="text-white font-semibold hover:underline">Status</a></li>
+                    <li><a href="#" class="text-white font-semibold hover:underline">Events</a></li>
+                    <li><a href="#" class="text-white font-semibold hover:underline">Conference</a></li>
+                    <li><a href="#" class="text-white font-semibold hover:underline">News</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="flex-1 container mx-auto px-4 py-8">
+        <h2 class="text-2xl font-bold text-blue-800 mb-6">Submissions</h2>
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            {% if submissions %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted At</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for paper in submissions %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ paper.title }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ paper.author.get_full_name|default:paper.author.username }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ paper.status|title }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ paper.submitted_at|date:"M d, Y H:i" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap flex space-x-2">
+                                <a href="{% url 'conference:download_paper' paper.id %}" class="inline-flex items-center bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-sm font-medium" title="Download Paper">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" /></svg>
+                                    Download
+                                </a>
+                                {% if paper.can_review %}
+                                    <a href="{% url 'dashboard:review_paper' paper.id %}" class="inline-flex items-center bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm font-medium" title="Review Paper">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20h9" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.121 2.121 0 113 3L7 19.5 3 21l1.5-4L16.5 3.5z" /></svg>
+                                        Review
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-gray-600">No submissions yet.</div>
+            {% endif %}
+        </div>
+    </main>
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <span class="font-bold text-lg">PaperSetu</span> &copy; {% now "Y" %}
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-blue-400 transition-colors">About</a>
+                    <a href="#" class="hover:text-blue-400 transition-colors">Support</a>
+                    <a href="#" class="hover:text-blue-400 transition-colors">Privacy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

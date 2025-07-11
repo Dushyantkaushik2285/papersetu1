@@ -1,0 +1,571 @@
+{% load conference_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - PaperSetu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-white shadow mb-8 border-b border-gray-200">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-blue-700">
+                <svg class="w-24 h-auto mr-2 inline" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Paper icon -->
+                    <rect x="5" y="10" width="15" height="20" fill="#1e40af" rx="2"/>
+                    <line x1="8" y1="15" x2="17" y2="15" stroke="white" stroke-width="1"/>
+                    <line x1="8" y1="18" x2="17" y2="18" stroke="white" stroke-width="1"/>
+                    <line x1="8" y1="21" x2="17" y2="21" stroke="white" stroke-width="1"/>
+                    <line x1="8" y1="24" x2="14" y2="24" stroke="white" stroke-width="1"/>
+                    <!-- Text -->
+                    <text x="25" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e40af">PaperSetu</text>
+                </svg>
+            </div>
+            <ul class="flex space-x-6">
+                <li class="border-r border-gray-300 pr-4"><a href="/home/" class="hover:text-blue-600">Home</a></li>
+                {% if user.is_authenticated %}
+                    <li class="border-r border-gray-300 pr-4"><a href="/accounts/logout/" class="hover:text-blue-600">Logout</a></li>
+                    <li class="relative">
+                        <button id="profileBtn" class="focus:outline-none">
+                            <img src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}" alt="Profile" class="w-8 h-8 rounded-full border border-gray-300">
+                        </button>
+                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <div class="font-semibold">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="text-xs text-gray-500">{{ user.email }}</div>
+                            </div>
+                            <a href="/accounts/settings/" class="block px-4 py-2 hover:bg-gray-100">Settings</a>
+                        </div>
+                    </li>
+                    <li class="relative">
+                        <button id="notificationBtn" class="focus:outline-none relative">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            {% if notifications %}
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ notifications.count }}</span>
+                            {% endif %}
+                        </button>
+                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded shadow-lg z-50 max-h-96 overflow-y-auto">
+                            <div class="px-4 py-2 border-b border-gray-100 bg-gray-50">
+                                <div class="font-semibold">Notifications</div>
+                            </div>
+                            {% if notifications %}
+                                {% for notification in notifications %}
+                                    <div class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer notification-item" data-notification-id="{{ notification.id }}">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex-1">
+                                                <div class="font-semibold text-sm">{{ notification.title }}</div>
+                                                <div class="text-xs text-gray-600 mt-1">{{ notification.message }}</div>
+                                                <div class="text-xs text-gray-400 mt-1">{{ notification.created_at|timesince }} ago</div>
+                                            </div>
+                                            <button class="text-gray-400 hover:text-gray-600 mark-read-btn" data-notification-id="{{ notification.id }}">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="px-4 py-3 text-gray-500 text-center">No new notifications</div>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% else %}
+                    <li><a href="/accounts/login/" class="hover:text-blue-600">Login</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    {% block nav %}
+    <nav class="bg-white shadow rounded mb-8 border border-gray-200 relative">
+        {% if conference %}
+        <ul class="flex flex-wrap md:flex-nowrap justify-start md:justify-center items-center overflow-x-auto text-sm font-semibold">
+            {% for item in nav_items %}
+                <li class="m-1 relative">
+                    {% if item == 'PC' %}
+                    <a href="{% url 'dashboard:pc_list' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">PC</a>
+                    {% elif item == 'Submissions' %}
+                    <a href="{% url 'dashboard:conference_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Submissions</a>
+                    {% elif item == 'Administration' %}
+                    <a href="{% url 'dashboard:conference_administration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Administration</a>
+                    {% elif item == 'Conference' %}
+                    <a href="{% url 'dashboard:conference_configuration' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Conference</a>
+                    {% elif item == 'Reviews' %}
+                    <a href="{% url 'dashboard:all_submissions' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Reviews</a>
+                    {% elif item == 'Status' %}
+                    <a href="{% url 'dashboard:status_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Status</a>
+                    {% elif item == 'Events' %}
+                    <a href="{% url 'dashboard:events_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Events</a>
+                    {% elif item == 'Email' %}
+                    <a href="{% url 'dashboard:email_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">Email</a>
+                    {% elif item == 'News' %}
+                    <a href="{% url 'dashboard:news_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">News</a>
+                    {% elif item == 'papersetu' %}
+                    <a href="{% url 'dashboard:papersetu_placeholder' conference.id %}" class="block px-4 py-2 rounded transition-all duration-150 {% if active_tab == item %}bg-blue-600 text-white shadow{% else %}bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700{% endif %}">papersetu</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-red-600 p-4">No conference selected. Please select a conference to use the navigation.</div>
+        {% endif %}
+    </nav>
+    {% endblock %}
+    <main class="container mx-auto px-4">
+        {% block content %}{% endblock %}
+        <!-- Success Message -->
+        {% if success_message == 'review_submitted' %}
+            <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">Success!</strong>
+                <span class="block sm:inline">Your review has been submitted successfully. The author has been notified.</span>
+            </div>
+        {% endif %}
+        
+        <!-- Dashboard Toggle -->
+        <div class="mb-6 flex space-x-4 border-b">
+            {% if is_chair %}
+                <a href="?view=chair" class="{% if dashboard_view == 'chair' %}bg-blue-600 text-white{% else %}bg-white border{% endif %} px-4 py-2 rounded">Chair Dashboard</a>
+            {% endif %}
+            {% if is_author %}
+                <a href="?view=author" class="{% if dashboard_view == 'author' %}bg-blue-600 text-white{% else %}bg-white border{% endif %} px-4 py-2 rounded">Author Dashboard</a>
+            {% endif %}
+            {% if is_reviewer %}
+                <a href="?view=reviewer" class="{% if dashboard_view == 'reviewer' %}bg-blue-600 text-white{% else %}bg-white border{% endif %} px-4 py-2 rounded">Reviewer Dashboard</a>
+            {% endif %}
+        </div>
+        {% if dashboard_view == 'chair' %}
+            <section class="mb-8">
+                <h2 class="text-xl font-bold mb-2">Your Conferences</h2>
+                <a href="/conference/create/" class="inline-block mb-4 bg-blue-600 text-white px-4 py-2 rounded">Create New Conference</a>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for conf in chaired_confs %}
+                        <div class="bg-white p-4 rounded shadow flex flex-col items-start">
+                            <div class="flex items-center w-full justify-between">
+                                <h3 class="text-lg font-semibold text-blue-700">{{ conf.name }}</h3>
+                                <span class="ml-2 text-xs px-2 py-1 rounded bg-gray-200">{{ conf.acronym }}</span>
+                            </div>
+                            <a href="/dashboard/chair/conference/{{ conf.id }}/" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold">Manage Conference</a>
+                        </div>
+                    {% empty %}
+                        <div class="col-span-2 text-gray-500">No conferences created yet.</div>
+                    {% endfor %}
+                </div>
+            </section>
+            <section class="mb-8">
+                <h2 class="text-xl font-bold mb-2">Reviewer Invitations <span class="ml-2 text-xs bg-red-500 text-white px-2 py-1 rounded">{{ chair_notifications.count }}</span></h2>
+                <div class="bg-white p-4 rounded shadow">
+                    {% for invite in chair_notifications %}
+                        <div class="mb-2 flex justify-between items-center">
+                            <span>{{ invite.reviewer.get_full_name }} ({{ invite.reviewer.email }}) for <b>{{ invite.conference.name }}</b></span>
+                            <span class="text-xs px-2 py-1 rounded bg-yellow-200">{{ invite.status|title }}</span>
+                        </div>
+                    {% empty %}
+                        <div class="text-gray-500">No pending invitations.</div>
+                    {% endfor %}
+                </div>
+            </section>
+            <!-- Modal for conference details -->
+            <div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+                <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative">
+                    <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">&times;</button>
+                    <div id="modalContent">
+                        <!-- Content will be filled by JS -->
+                    </div>
+                </div>
+            </div>
+        {% elif dashboard_view == 'author' %}
+            <section class="mb-8">
+                <h2 class="text-xl font-bold mb-2">Live & Upcoming Conferences</h2>
+                <form method="get" class="mb-4 flex space-x-2">
+                    <input type="hidden" name="view" value="author">
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search by name or topic..." class="border rounded px-3 py-1 w-64">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded">Search</button>
+                </form>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for conf in live_upcoming_confs %}
+                        <div class="bg-white p-4 rounded shadow">
+                            <h3 class="text-lg font-semibold">{{ conf.name }}</h3>
+                            <div class="text-sm text-gray-500">{{ conf.start_date }} to {{ conf.end_date }}</div>
+                            <div class="text-sm text-blue-700 mb-1">Domain: {{ conf.domain }}</div>
+                            <p class="text-gray-600 mb-2">{{ conf.description|truncatewords:20 }}</p>
+                            <a href="/conference/{{ conf.id }}/submit-paper/" class="mt-2 inline-block bg-blue-600 text-white px-3 py-1 rounded">Submit Paper</a>
+                        </div>
+                    {% empty %}
+                        <div class="col-span-2 text-gray-500">No conferences found.</div>
+                    {% endfor %}
+                </div>
+            </section>
+            <section class="mb-8">
+                <h2 class="text-xl font-bold mb-2">Paper Decisions & Reviews</h2>
+                <div class="bg-white p-4 rounded shadow">
+                    {% for paper in submitted_papers %}
+                        <div class="mb-4 p-4 border rounded-lg">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-lg">{{ paper.title }}</h3>
+                                    <p class="text-gray-600 mt-1">{{ paper.abstract|truncatewords:30 }}</p>
+                                    <div class="text-sm text-gray-500 mt-2">
+                                        <span class="font-semibold">Conference:</span> {{ paper.conference.name }}
+                                        {% if not paper.conference.is_approved %}
+                                            <span class="ml-2 px-2 py-1 rounded bg-red-100 text-red-700 text-xs font-semibold">Not Approved</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <span class="font-semibold">Status:</span> 
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {% if paper.status == 'accepted' %}bg-green-100 text-green-800
+                                            {% elif paper.status == 'rejected' %}bg-red-100 text-red-800
+                                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                            {{ paper.status|title }}
+                                        </span>
+                                        
+                                        <!-- Review Statistics -->
+                                        {% with stats=all_papers_review_stats|get_item:paper.id %}
+                                        {% if stats.total_reviews > 0 %}
+                                        <div class="mt-1 text-xs text-gray-400">
+                                            {{ stats.accept_count }} accept, {{ stats.reject_count }} reject ({{ stats.total_reviews }} total)
+                                        </div>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <span class="font-semibold">Reviews:</span> {{ paper.reviews.count }} review{{ paper.reviews.count|pluralize }}
+                                    </div>
+                                    {% if paper.reviews.exists %}
+                                        <div class="mt-2">
+                                            <span class="font-semibold text-sm">Review Decisions:</span>
+                                            {% for review in paper.reviews.all %}
+                                                <span class="inline-block bg-gray-200 rounded px-2 py-1 text-xs mr-1 mb-1">
+                                                    {{ review.decision|title|default:"Pending" }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-gray-500 text-center py-4">No papers submitted yet.</div>
+                    {% endfor %}
+                </div>
+            </section>
+            <section>
+                <h2 class="text-xl font-bold mb-2">Your Submitted Papers</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded shadow">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conference</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Review Count</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for paper in submitted_papers %}
+                                <tr>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ paper.title }}</td>
+                                    <td class="px-4 py-4 text-sm text-gray-500">{{ paper.conference.name }}
+                                        {% if not paper.conference.is_approved %}
+                                            <span class="ml-2 px-2 py-1 rounded bg-red-100 text-red-700 text-xs font-semibold">Not Approved</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ paper.submitted_at|date:'Y-m-d' }}</td>
+                                    <td class="px-4 py-4 text-sm text-gray-500">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {% if paper.status == 'accepted' %}bg-green-100 text-green-800
+                                            {% elif paper.status == 'rejected' %}bg-red-100 text-red-800
+                                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                            {{ paper.status|title }}
+                                        </span>
+                                        
+                                        <!-- Review Statistics -->
+                                        {% with stats=all_papers_review_stats|get_item:paper.id %}
+                                        {% if stats.total_reviews > 0 %}
+                                        <div class="mt-1 text-xs text-gray-400">
+                                            {{ stats.accept_count }} accept, {{ stats.reject_count }} reject ({{ stats.total_reviews }} total)
+                                        </div>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm text-gray-500">{{ paper.reviews.count }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="5" class="px-4 py-4 text-gray-500 text-center">No papers submitted yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        {% elif dashboard_view == 'reviewer' %}
+            <section class="mb-8">
+                <h2 class="text-xl font-bold mb-2">Reviewer Invitations</h2>
+                <div class="bg-white p-4 rounded shadow">
+                    {% for invite in reviewer_invites %}
+                        <div class="mb-4 p-4 border rounded-lg">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-lg">{{ invite.conference.name }}</h3>
+                                    <p class="text-gray-600 mt-1">{{ invite.conference.description|truncatewords:20 }}</p>
+                                    <div class="text-sm text-gray-500 mt-2">
+                                        <span class="font-semibold">Chair:</span> {{ invite.conference.chair.get_full_name|default:invite.conference.chair.username }}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <span class="font-semibold">Domain:</span> {{ invite.conference.domain }}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <span class="font-semibold">Status:</span> 
+                                        <span class="px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800">{{ invite.status|title }}</span>
+                                    </div>
+                                </div>
+                                {% if invite.status == 'pending' %}
+                                    <div class="flex space-x-2">
+                                        <form method="post" action="{% url 'dashboard:review_invite_respond' invite.id %}" class="inline">
+                                            {% csrf_token %}
+                                            <button name="response" value="accept" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Accept</button>
+                                            <button name="response" value="decline" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Decline</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-gray-500 text-center py-4">No pending reviewer invitations.</div>
+                    {% endfor %}
+                </div>
+            </section>
+            <section class="mb-8">
+                <h2 class="text-xl font-bold mb-2">Pending Paper Review Assignments</h2>
+                <div class="bg-white p-4 rounded shadow">
+                    {% for paper in pending_paper_reviews %}
+                        <div class="mb-4 p-4 border rounded-lg">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-lg">{{ paper.title }}</h3>
+                                    <p class="text-gray-600 mt-1">{{ paper.abstract|truncatewords:30 }}</p>
+                                    <div class="text-sm text-gray-500 mt-2">
+                                        <span class="font-semibold">Conference:</span> {{ paper.conference.name }}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <span class="font-semibold">Author:</span> {{ paper.author.get_full_name|default:paper.author.username }}
+                                    </div>
+                                    
+                                    <!-- Review Statistics -->
+                                    {% with stats=all_papers_review_stats|get_item:paper.id %}
+                                    {% if stats.total_reviews > 0 %}
+                                    <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                                        <h4 class="font-semibold text-sm text-gray-700 mb-2">Review Progress:</h4>
+                                        <div class="flex space-x-4 text-sm">
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                                <span class="text-green-700">{{ stats.accept_count }} Accept</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                                <span class="text-red-700">{{ stats.reject_count }} Reject</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                                <span class="text-blue-700">{{ stats.total_reviews }}/2+ Reviews</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Status Indicators -->
+                                        {% if stats.can_be_accepted %}
+                                            <div class="mt-2 p-2 bg-green-100 border border-green-300 rounded">
+                                                <span class="text-green-800 text-sm font-semibold">✓ Paper can be accepted (2+ accepts)</span>
+                                            </div>
+                                        {% elif stats.can_be_rejected %}
+                                            <div class="mt-2 p-2 bg-red-100 border border-red-300 rounded">
+                                                <span class="text-red-800 text-sm font-semibold">✗ Paper can be rejected (majority reject)</span>
+                                            </div>
+                                        {% elif stats.needs_more_reviews %}
+                                            <div class="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded">
+                                                <span class="text-yellow-800 text-sm font-semibold">⏳ Waiting for more reviews (need 2+ total)</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    {% endwith %}
+                                </div>
+                                
+                                <div class="ml-4 flex flex-col space-y-2">
+                                    <a href="{% url 'dashboard:review_paper' paper.id %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center">
+                                        Review Paper
+                                    </a>
+                                    {% if paper.file %}
+                                        <a href="{{ paper.file.url }}" target="_blank" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-center">
+                                            Download PDF
+                                        </a>
+                                    {% else %}
+                                        <span class="text-gray-400 italic">No file uploaded</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-gray-500 text-center py-8">No papers assigned for review.</p>
+                    {% endfor %}
+                </div>
+            </section>
+            <section>
+                <h2 class="text-xl font-bold mb-2">Assigned Papers</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded shadow">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conference</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Your Decision</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for paper in assigned_papers %}
+                                <tr>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ paper.title }}</td>
+                                    <td class="px-4 py-4 text-sm text-gray-500">{{ paper.conference.name }}
+                                        {% if not paper.conference.is_approved %}
+                                            <span class="ml-2 px-2 py-1 rounded bg-red-100 text-red-700 text-xs font-semibold">Not Approved</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        {% if paper.status == 'submitted' %}
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Submitted</span>
+                                        {% elif paper.status == 'accepted' %}
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Accepted</span>
+                                        {% elif paper.status == 'rejected' %}
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm text-gray-500">
+                                        {% for review in paper.reviews.all %}
+                                            {% if review.reviewer == user %}
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if review.decision == 'accept' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                                    {{ review.decision|title }}
+                                                </span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {% for review in paper.reviews.all %}
+                                            {% if review.reviewer == user %}
+                                                {% if review.decision %}
+                                                    <span class="text-gray-400">Completed</span>
+                                                {% else %}
+                                                    <a href="{% url 'dashboard:review_paper' paper.id %}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs">
+                                                        Review Paper
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="5" class="px-4 py-4 text-gray-500 text-center">No assigned papers yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        {% endif %}
+    </main>
+    <script>
+    // Profile dropdown logic
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    if(profileBtn && profileDropdown) {
+        profileBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', function() {
+            profileDropdown.classList.add('hidden');
+        });
+    }
+
+    // Notification dropdown logic
+    const notificationBtn = document.getElementById('notificationBtn');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    if(notificationBtn && notificationDropdown) {
+        notificationBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notificationDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', function() {
+            notificationDropdown.classList.add('hidden');
+        });
+    }
+
+    // Mark notification as read
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const notificationId = this.getAttribute('data-notification-id');
+            const notificationItem = this.closest('.notification-item');
+            
+            fetch(`/dashboard/notification/${notificationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    notificationItem.style.display = 'none';
+                    // Update notification count
+                    const countBadge = document.querySelector('#notificationBtn span');
+                    if (countBadge) {
+                        const currentCount = parseInt(countBadge.textContent);
+                        if (currentCount > 1) {
+                            countBadge.textContent = currentCount - 1;
+                        } else {
+                            countBadge.style.display = 'none';
+                        }
+                    }
+                }
+            });
+        });
+    });
+
+    // Modal logic
+    const modal = document.getElementById('detailsModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalContent = document.getElementById('modalContent');
+    
+    if (modal && closeModalBtn && modalContent) {
+        document.querySelectorAll('.view-details-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const confId = this.getAttribute('data-conf-id');
+                
+                // Simple modal content
+                let html = `<h2 class='text-xl font-bold mb-2 text-blue-700'>Conference Details</h2>`;
+                html += `<div class='mb-4 text-gray-600'>Click the button below to manage this conference.</div>`;
+                html += `<div class='flex space-x-2'>`;
+                html += `<a href='/dashboard/chair/conference/${confId}/' class='bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700'>Manage Conference</a>`;
+                html += `<button onclick="modal.classList.add('hidden')" class='bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'>Close</button>`;
+                html += `</div>`;
+                modalContent.innerHTML = html;
+                modal.classList.remove('hidden');
+            });
+        });
+        
+        closeModalBtn.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+        
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+    </script>
+</body>
+</html> 

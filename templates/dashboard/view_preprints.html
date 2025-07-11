@@ -1,0 +1,28 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">My Preprints</h1>
+<table class="min-w-full bg-white rounded shadow">
+  <thead>
+    <tr>
+      <th class="px-4 py-2">Title</th>
+      <th class="px-4 py-2">Submission Date</th>
+      <th class="px-4 py-2">Status</th>
+      <th class="px-4 py-2">Link</th>
+      <th class="px-4 py-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for preprint in preprints %}
+    <tr>
+      <td class="px-4 py-2">{{ preprint.title }}</td>
+      <td class="px-4 py-2">{{ preprint.submission_date }}</td>
+      <td class="px-4 py-2">{{ preprint.status|title }}</td>
+      <td class="px-4 py-2"><a href="{{ preprint.link }}" class="text-blue-600 underline">View</a></td>
+      <td class="px-4 py-2"><a href="#" class="text-orange-600 underline">Reupload</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="text-center text-gray-500 py-4">No preprints found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %} 

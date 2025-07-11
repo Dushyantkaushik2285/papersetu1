@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invite PC Member - {{ conference.acronym|default:conference.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col">
+    <main class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-extrabold text-blue-700 mb-8 flex items-center gap-3">
+            <i class="fas fa-user-plus text-blue-500"></i> Invite PC Member
+            <span class="text-lg font-normal text-gray-500 ml-4">({{ conference.acronym|default:conference.name }})</span>
+        </h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <!-- Invite Form Card -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-between">
+                <h2 class="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2"><i class="fas fa-envelope-open-text"></i> Send Invitation</h2>
+                <button id="toggleBulkInvite" type="button" class="mb-4 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded font-semibold w-full">Bulk Invite PC Members</button>
+                <form method="post" id="bulkInviteForm" style="display:none;">
+                    {% csrf_token %}
+                    <label for="bulk_invite" class="block text-gray-700 font-semibold mb-2">Bulk Invite (Name & Email per line, comma or tab separated)</label>
+                    <textarea name="bulk_invite" id="bulk_invite" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4" placeholder="e.g. John Doe, john@example.com\nJane Smith, jane@example.com"></textarea>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium w-full">Send Bulk Invitations</button>
+                </form>
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
+                    <input type="text" name="name" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4" required>
+                    <label for="email" class="block text-gray-700 font-semibold mb-2">Email address</label>
+                    <input type="email" name="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4" required>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium w-full">Send Invitation</button>
+                </form>
+                {% if message %}
+                    <div class="mt-4 p-3 rounded bg-blue-100 text-blue-800 font-semibold flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i> {{ message }}
+                    </div>
+                {% endif %}
+                <script>
+                document.getElementById('toggleBulkInvite').onclick = function() {
+                    var form = document.getElementById('bulkInviteForm');
+                    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                };
+                </script>
+            </div>
+            <!-- Mail Preview Card -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-between">
+                <h2 class="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2"><i class="fas fa-mail-bulk"></i> Mail Preview</h2>
+                {% if mail_preview %}
+                    <div class="mb-2"><span class="font-semibold">Subject:</span> <span class="text-gray-700">{{ mail_preview.subject }}</span></div>
+                    <pre class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-gray-800 whitespace-pre-wrap">{{ mail_preview.body }}</pre>
+                {% else %}
+                    <div class="text-gray-500">Fill the form to preview the invitation email here.</div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Invite List Card -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto">
+            <h2 class="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2"><i class="fas fa-users"></i> All PC Invitations</h2>
+            {% if invites %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invited By</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">View</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for invite in invites %}
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap">{{ invite.name }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap">{{ invite.email }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap">PC Member</td>
+                            <td class="px-4 py-2 whitespace-nowrap">
+                                {% if invite.status == 'pending' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                {% elif invite.status == 'accepted' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Accepted</span>
+                                {% elif invite.status == 'declined' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Declined</span>
+                                {% elif invite.status == 'cancelled' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-200 text-gray-700">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-2 whitespace-nowrap">{{ invite.invited_by.get_full_name|default:invite.invited_by.username }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap">
+                                <a href="{% url 'dashboard:pc_invite_accept' invite.token %}" class="text-blue-600 hover:underline">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-gray-600">No invitations yet.</div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html> 

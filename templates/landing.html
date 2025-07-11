@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaperSetu - Academic Conference Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex flex-col justify-between">
+    <!-- Hero Section -->
+    <section class="flex flex-col md:flex-row items-center justify-between px-8 py-16 max-w-6xl mx-auto">
+        <div class="md:w-1/2 mb-10 md:mb-0">
+            <h1 class="text-5xl font-extrabold text-blue-700 mb-4 leading-tight">Empower Your Academic Journey</h1>
+            <p class="text-xl text-gray-600 mb-8">PaperSetu streamlines conference submissions, peer reviews, and collaboration for authors, reviewers, and chairs—all in one place.</p>
+            {% if user.is_authenticated %}
+                <a href="/home/" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow hover:bg-blue-700 transition">Go to Dashboard</a>
+                <a href="/conference/create/" class="inline-block bg-green-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow hover:bg-green-700 transition ml-4">Create Conference</a>
+            {% else %}
+                <a href="/accounts/login/" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow hover:bg-blue-700 transition">Get Started</a>
+                <a href="/accounts/login/?next=/home/" class="inline-block bg-green-600 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow hover:bg-green-700 transition ml-4">Create Conference</a>
+            {% endif %}
+        </div>
+        <div class="md:w-1/2 flex justify-center">
+            <img src="https://images.pexels.com/photos/2305084/pexels-photo-2305084.jpeg" alt="Hero Visual" class="w-110 max-w-full rounded-xl shadow-lg border border-blue-100">
+        </div>
+    </section>
+    <!-- Features Section -->
+    <section class="bg-white py-16 px-8 shadow-inner">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-blue-700 mb-8 text-center">Why Choose PaperSetu?</h2>
+            <div class="grid md:grid-cols-3 gap-10">
+                <div class="bg-blue-50 rounded-xl p-6 shadow flex flex-col items-center">
+                    <img src="https://img.icons8.com/ios-filled/100/2563eb/conference-call.png" class="w-16 h-16 mb-4" alt="Easy Conference Management">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2">Easy Conference Management</h3>
+                    <p class="text-gray-600 text-center">Create, manage, and track conferences with intuitive tools for chairs and organizers.</p>
+                </div>
+                <div class="bg-blue-50 rounded-xl p-6 shadow flex flex-col items-center">
+                    <img src="https://img.icons8.com/ios-filled/100/2563eb/checked--v1.png" class="w-16 h-16 mb-4" alt="Seamless Peer Review">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2">Seamless Peer Review</h3>
+                    <p class="text-gray-600 text-center">Streamlined paper submission, reviewer assignment, and transparent review workflow.</p>
+                </div>
+                <div class="bg-blue-50 rounded-xl p-6 shadow flex flex-col items-center">
+                    <img src="https://img.icons8.com/ios-filled/100/2563eb/collaboration.png" class="w-16 h-16 mb-4" alt="Collaboration & Notifications">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2">Collaboration & Notifications</h3>
+                    <p class="text-gray-600 text-center">Real-time notifications and dashboards for authors, reviewers, and chairs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Gallery/Showcase Section -->
+    <section class="py-16 px-8 max-w-5xl mx-auto">
+        <h2 class="text-2xl font-bold text-blue-700 mb-8 text-center">Showcase</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+            <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" class="rounded-xl shadow-lg w-full h-48 object-cover" alt="Showcase 1">
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" class="rounded-xl shadow-lg w-full h-48 object-cover" alt="Showcase 2">
+            <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80" class="rounded-xl shadow-lg w-full h-48 object-cover" alt="Showcase 3">
+        </div>
+    </section>
+    <!-- Footer -->
+    <footer class="bg-blue-700 text-white py-6 mt-8">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center px-4">
+            <div class="mb-4 md:mb-0">
+                <img src="https://sdmntpreastus.oaiusercontent.com/files/00000000-34dc-61f9-8e3a-40507fb3e4a8/raw?se=2025-06-26T20%3A40%3A27Z&sp=r&sv=2024-08-04&sr=b&scid=f51c0b24-2622-5c35-973f-203d713665bf&skoid=02b7f7b5-29f8-416a-aeb6-99464748559d&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-06-26T07%3A48%3A21Z&ske=2025-06-27T07%3A48%3A21Z&sks=b&skv=2024-08-04&sig=BSYIOXuJ%2BGMHIbSfj9QD5fU7re%2BO1GLG0Gq54sbwm%2Bk%3D" alt="PaperSetu Logo" class="w-24 h-auto mb-4">
+                <span class="font-bold text-lg">PaperSetu</span> &copy; {% now "Y" %}
+            </div>
+            <div class="flex space-x-6">
+                <a href="#features" class="hover:underline">Features</a>
+                <a href="#" class="hover:underline">Contact</a>
+                <a href="mailto:support@papersetu.com" class="hover:underline">Support</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

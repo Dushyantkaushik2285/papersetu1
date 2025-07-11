@@ -1,0 +1,18 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">News</h1>
+<ul class="space-y-4">
+  {% for news in news_items %}
+    <li class="bg-white rounded shadow p-4">
+      <div class="flex justify-between items-center mb-2">
+        <span class="font-semibold text-indigo-700">{{ news.title }}</span>
+        <span class="text-xs text-gray-400">{{ news.date }}</span>
+      </div>
+      <div class="mb-2 text-gray-700">{{ news.content }}</div>
+      <span class="text-xs bg-gray-200 rounded px-2 py-1">{{ news.section }}</span>
+    </li>
+  {% empty %}
+    <li class="text-gray-500">No news or announcements yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %} 

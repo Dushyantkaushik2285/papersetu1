@@ -1,0 +1,112 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block nav %}{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Welcome Card -->
+    <div class="bg-white rounded-xl shadow p-8 mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="text-4xl font-bold text-blue-700 mb-2">Welcome to PaperSetu</h1>
+            <p class="text-lg text-gray-600 mb-4">Your comprehensive conference management hub</p>
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-xl font-semibold text-gray-700">
+                    {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                </div>
+                <span class="text-gray-800 font-medium text-lg">{{ user.get_full_name|default:user.username }}</span>
+            </div>
+        </div>
+    </div>
+    <!-- Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="{% url 'dashboard:view_roles' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-blue-500">
+            <div>
+                <div class="flex items-center mb-2 text-blue-700">
+                    <span class="text-lg font-semibold">My Recent Roles</span>
+                </div>
+                <p class="text-gray-600 mb-4">View and access your roles in different conferences</p>
+            </div>
+            <span class="mt-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-medium text-center">View Roles</span>
+        </a>
+        <a href="{% url 'dashboard:my_conferences' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-green-500">
+            <div>
+                <div class="flex items-center mb-2 text-green-700">
+                    <span class="text-lg font-semibold">My Conferences</span>
+                </div>
+                <p class="text-gray-600 mb-4">Manage conferences where you have roles</p>
+            </div>
+            <span class="mt-auto bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-medium text-center">View Conferences</span>
+        </a>
+        <a href="{% url 'dashboard:create_conference' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-purple-500">
+            <div>
+                <div class="flex items-center mb-2 text-purple-700">
+                    <span class="text-lg font-semibold">Create New Conference</span>
+                </div>
+                <p class="text-gray-600 mb-4">Start a new conference as chair</p>
+            </div>
+            <span class="mt-auto bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded font-medium text-center">Create Conference</span>
+        </a>
+        <a href="{% url 'dashboard:publish_with_us' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-red-500">
+            <div>
+                <div class="flex items-center mb-2 text-red-700">
+                    <span class="text-lg font-semibold">Publish With Us</span>
+                </div>
+                <p class="text-gray-600 mb-4">Learn about publishing opportunities</p>
+            </div>
+            <span class="mt-auto bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded font-medium text-center">Learn More</span>
+        </a>
+        <a href="{% url 'dashboard:manage_cfp' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-orange-500">
+            <div>
+                <div class="flex items-center mb-2 text-orange-700">
+                    <span class="text-lg font-semibold">Smart CFP</span>
+                </div>
+                <p class="text-gray-600 mb-4">Create and manage Call for Papers</p>
+            </div>
+            <span class="mt-auto bg-orange-600 hover:bg-orange-700 text-white px-5 py-2 rounded font-medium text-center">Manage CFP</span>
+        </a>
+        <a href="{% url 'dashboard:view_preprints' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-pink-500">
+            <div>
+                <div class="flex items-center mb-2 text-pink-700">
+                    <span class="text-lg font-semibold">My Preprints</span>
+                </div>
+                <p class="text-gray-600 mb-4">Manage your preprint submissions</p>
+            </div>
+            <span class="mt-auto bg-pink-600 hover:bg-pink-700 text-white px-5 py-2 rounded font-medium text-center">View Preprints</span>
+        </a>
+        <a href="{% url 'dashboard:view_slides' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-yellow-500">
+            <div>
+                <div class="flex items-center mb-2 text-yellow-700">
+                    <span class="text-lg font-semibold">My Slides</span>
+                </div>
+                <p class="text-gray-600 mb-4">Manage your uploaded slides</p>
+            </div>
+            <span class="mt-auto bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded font-medium text-center">View Slides</span>
+        </a>
+        <a href="{% url 'dashboard:read_news' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-indigo-500">
+            <div>
+                <div class="flex items-center mb-2 text-indigo-700">
+                    <span class="text-lg font-semibold">News</span>
+                </div>
+                <p class="text-gray-600 mb-4">Latest announcements and updates</p>
+            </div>
+            <span class="mt-auto bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded font-medium text-center">Read News</span>
+        </a>
+        <a href="{% url 'dashboard:settings' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-gray-500">
+            <div>
+                <div class="flex items-center mb-2 text-gray-700">
+                    <span class="text-lg font-semibold">My Account</span>
+                </div>
+                <p class="text-gray-600 mb-4">Manage your account settings</p>
+            </div>
+            <span class="mt-auto bg-gray-600 hover:bg-gray-700 text-white px-5 py-2 rounded font-medium text-center">Settings</span>
+        </a>
+        <a href="{% url 'dashboard:read_terms' %}" class="bg-white rounded-xl shadow p-6 flex flex-col justify-between group hover:shadow-lg transition border-t-4 border-gray-400">
+            <div>
+                <div class="flex items-center mb-2 text-gray-700">
+                    <span class="text-lg font-semibold">Terms of Service</span>
+                </div>
+                <p class="text-gray-600 mb-4">Read our terms and policies</p>
+            </div>
+            <span class="mt-auto bg-gray-400 hover:bg-gray-500 text-white px-5 py-2 rounded font-medium text-center">Read Terms</span>
+        </a>
+    </div>
+</div>
+{% endblock %} 
